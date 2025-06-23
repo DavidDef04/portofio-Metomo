@@ -119,12 +119,11 @@ const DevModal = ({ onClose }) => {
           &times;
         </button>
 
-        {/* Titre */}
+        
         <h3 className="text-2xl font-bold mb-4 text-white">
           💻 Développement Full-Stack
         </h3>
 
-        {/* Description */}
         <p className="text-base lg:text-lg leading-relaxed text-gray-300 mb-6">
           Je conçois des applications web et mobiles en utilisant des
           technologies modernes comme Laravel, Flutter, Next.js.

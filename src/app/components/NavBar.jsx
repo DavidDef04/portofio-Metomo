@@ -82,9 +82,8 @@ const NavBar = ({ aboutSectionRef }) => {
         initial={{ x: "100%" }}
         animate={{ x: navbarOpen ? 0 : "100%" }}
         transition={{ duration: 0.3 }}
-        onClick={() => setNavbarOpen(false)} // fermer au clic sur l'overlay
+        onClick={() => setNavbarOpen(false)} 
       >
-        {/* Empêche la fermeture si on clique à l’intérieur du menu */}
         <div onClick={(e) => e.stopPropagation()}>
           {navbarOpen && (
             <MenuOverlay

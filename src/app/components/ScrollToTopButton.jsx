@@ -15,7 +15,7 @@ const ScrollToTopButton = () => {
         }
     };
 
-     // Ajouter l'écouteur d'événements pour le scroll
+
      useEffect(() => {
         windows.addEventListener('scroll', toggleVisibility);
         return () => {
@@ -24,7 +24,7 @@ const ScrollToTopButton = () => {
      }, []);
 
 
-    //  Faire defiler la page vers le haut
+  
     const scrollToHome = () => {
         const HeroSection = document.getElementById("home");
         if ( HeroSection) {

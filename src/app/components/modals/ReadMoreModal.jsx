@@ -7,7 +7,7 @@ const ReadMoreModal = ({ onClose }) => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, []); // <- ajout tableau dépendances vide
+  }, []);
 
   return (
     <motion.div
@@ -22,7 +22,7 @@ const ReadMoreModal = ({ onClose }) => {
         exit={{ y: 50, opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="bg-[#1e1e1e] rounded-lg max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh] relative"
-        style={{ WebkitOverflowScrolling: "touch" }} // scroll fluide sur mobile
+        style={{ WebkitOverflowScrolling: "touch" }} 
       >
         <button
           onClick={onClose}

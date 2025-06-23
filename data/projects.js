@@ -3,7 +3,7 @@ const projectData = [
     id: 1,
     title: "EyeSon",
     description:
-      "EyeSon est une application de contrôle parental intelligente, conçue pour permettre aux parents de surveiller discrètement et efficacement l'activité numérique de leurs enfants. Grâce à des fonctionnalités avancées comme la collecte temporaire des médias (photos, vidéos), EyeSon offre une vision complète de l’environnement numérique de l’enfant, assurant ainsi sa sécurité et la tranquillité d’esprit des parents.",
+      "EyeSon is a smart parental control app designed to allow parents to discreetly and effectively monitor their children's digital activity. With advanced features like temporary media collection (photos, videos), EyeSon provides a comprehensive view of a child's digital environment, ensuring their safety and parents' peace of mind.",
     image: "/images/projects/eyeson.jpg",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://github.com/EYES-ON-GROUP/eyeson_backend",
@@ -13,7 +13,7 @@ const projectData = [
     id: 2,
     title: "Test de vulnérabilité Maisoft",
     description:
-      "Ce projet a consisté en un test de vulnérabilité sur le site officiel de Maisoft, entreprise spécialisée dans les solutions logicielles professionnelles. L’objectif était d’évaluer la sécurité de l’application web face aux menaces courantes telles que les injections SQL, les attaques XSS, les failles de configuration ou encore la mauvaise gestion des sessions. Le test a permis de détecter plusieurs points sensibles et de fournir un ensemble de recommandations techniques pour renforcer la protection des données et l’intégrité de la plateforme.",
+      "This project involved a vulnerability test on the official website of Maisoft, a company specializing in professional software solutions. The goal was to assess the web application's security against common threats such as SQL injections, XSS attacks, configuration flaws, and poor session management. The test identified several sensitive points and provided a set of technical recommendations to strengthen data protection and platform integrity.",
     image: "/images/projects/logo-maisoft.png",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://www.maisoft-group.com/",
@@ -23,7 +23,7 @@ const projectData = [
     id: 3,
     title: "Test de vulnérabilité getsmarter",
     description:
-      "Ce projet porte sur un test de vulnérabilité réalisé sur le site GetSmarter. L'objectif était d'évaluer la sécurité de la plateforme en identifiant d'éventuelles failles exploitables pouvant compromettre les données des utilisateurs ou l'intégrité du système. L'analyse a couvert plusieurs aspects, notamment les injections SQL, les failles XSS, la gestion des sessions et la configuration des en-têtes de sécurité. Les résultats ont permis de formuler des recommandations concrètes pour renforcer la posture de cybersécurité du site.",
+      "This project involved a vulnerability test conducted on the GetSmarter website. The objective was to assess the platform's security by identifying potential exploitable flaws that could compromise user data or system integrity. The analysis covered several aspects, including SQL injections, XSS flaws, session management, and security header configuration. The results led to concrete recommendations to strengthen the website's cybersecurity posture.",
     image: "/images/projects/logo-getsmarter.png",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://getsmarter-group.com/",
@@ -33,10 +33,10 @@ const projectData = [
     id: 4,
     title: "Mon Portfolio",
     description:
-      "Ce projet est mon portfolio personnel, développé afin de présenter mes compétences, projets, expériences et expertises dans le domaine du développement web et de la cybersécurité. Conçu avec une interface moderne, fluide et responsive, il met en valeur mes réalisations techniques à travers une navigation intuitive et des animations interactives. Ce portfolio est aussi un terrain d’expérimentation pour l’intégration de bonnes pratiques en accessibilité, performance, et design UX/UI.",
+      "This project is my personal portfolio, developed to showcase my skills, projects, experiences, and expertise in the field of web development and cybersecurity. Designed with a modern, fluid, and responsive interface, it showcases my technical achievements through intuitive navigation and interactive animations. This portfolio is also a testing ground for the integration of best practices in accessibility, performance, and UX/UI design.",
     image: "/images/projects/portfolio.png",
     gitUrl: "https://github.com/ton-repo/eyeson",
-    linkUrl: "#",
+    linkUrl: "https://github.com/DavidDef04/portofio-Metomo",
     tag: ["All", "Web"],
   },
 

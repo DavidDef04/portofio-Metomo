@@ -5,7 +5,7 @@ const sections = [
   { id: "profile", label: "Profil" },
   { id: "projects", label: "Projets" },
   { id: "contact", label: "Contact" },
-  // Tu pourras ajouter plus tard : compétences, stats, etc.
+  
 ];
 
 export default function DashboardLayout() {
@@ -39,9 +39,9 @@ export default function DashboardLayout() {
 
       {/* Main content */}
       <main className="flex-1 p-8 overflow-y-auto">
-        {activeSection === "profile" && <div>📄 Affichage du profil ici</div>}
-        {activeSection === "projects" && <div>🗂️ Affichage des projets ici</div>}
-        {activeSection === "contact" && <div>📬 Affichage des infos contact ici</div>}
+        {activeSection === "profile" && <div>📄 Affichage du profil </div>}
+        {activeSection === "projects" && <div>🗂️ Affichage des projets </div>}
+        {activeSection === "contact" && <div>📬 Affichage des infos contact </div>}
       </main>
     </div>
   );

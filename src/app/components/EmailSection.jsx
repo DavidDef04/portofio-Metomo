@@ -44,7 +44,7 @@ const EmailSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const [popupCount, setPopupCount] = useState(0); // Pour forcer remount popup
+  const [popupCount, setPopupCount] = useState(0); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,8 +52,7 @@ const EmailSection = () => {
     setIsLoading(true);
     setProgress(0);
     setShowPopup(true);
-    setPopupCount((c) => c + 1); // incrémente à chaque apparition du popup
-
+    setPopupCount((c) => c + 1); 
     const duration = 4000;
     const intervalTime = 50;
     let elapsed = 0;
@@ -274,7 +273,7 @@ const EmailSection = () => {
       <AnimatePresence>
         {showPopup && (
           <motion.div
-            key={`popup-${popupCount}`} // clé unique pour forcer remount et rejouer animation
+            key={`popup-${popupCount}`} 
             variants={popupVariants}
             initial="hidden"
             animate="visible"

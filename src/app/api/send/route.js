@@ -9,6 +9,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Template HTML pour l'email envoyé à l'admin
 const emailHtmlTemplate = ({ subject, message, senderEmail }) => `
   <div style="
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

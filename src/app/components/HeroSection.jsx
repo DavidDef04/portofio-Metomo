@@ -69,7 +69,6 @@ const HeroSection = () => {
             designed with ❤️, technical flair, and creativity.
           </p>
 
-          {/* Boutons avec animation clic */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <motion.button
               whileTap={{ scale: 0.9, rotate: -2 }}

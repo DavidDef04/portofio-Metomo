@@ -66,12 +66,12 @@ const DownloadCV = ({ className, label = "Download CV" }) => {
 
       {showCaptcha && (
         <div
-          onClick={() => setShowCaptcha(false)} // clic en dehors ferme
+          onClick={() => setShowCaptcha(false)} 
           className="fixed top-0 left-0 w-screen h-screen z-50"
           style={{ cursor: "default" }} // optionnel
         >
           <div
-            onClick={(e) => e.stopPropagation()} // clic dans captcha ne ferme pas
+            onClick={(e) => e.stopPropagation()} 
             className="fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-[#121212] px-6 py-4 rounded-xl shadow-xl border border-[#444] max-w-[90vw]"
           >
             <ReCAPTCHA

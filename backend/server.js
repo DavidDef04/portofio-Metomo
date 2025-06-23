@@ -9,13 +9,11 @@ const PORT = 4000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Utilisateur hardcodé
 const USER = {
-  username: "admin",
-  password: "password123", // ⚠️ Ne jamais utiliser en clair en prod
+  username: "",
+  password: "",
 };
 
-// Route de test pour vérifier que le backend tourne
 app.get("/", (req, res) => {
   res.send("✅ Backend running !");
 });

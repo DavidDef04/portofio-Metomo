@@ -9,12 +9,12 @@ import Footer from "./components/Footer";
 import AchievementsSection from "./components/AchievementsSection";
 import Preloader from "./components/Preloader";
 import TechSlider from "./components/TechSlider";
-// import ScrollToTopButton from "./components/ScrollToTopButton";
+
 
 
 
 export default function Home() {
-  const aboutRef = useRef(null);  // Ref initialisé à null
+  const aboutRef = useRef(null); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +24,6 @@ export default function Home() {
     return () => clearTimeout(timer); 
   }, []);
 
-  // Affiche le préchargeur si la page est en cours de chargement
   if (loading) return <Preloader />;
 
   return (

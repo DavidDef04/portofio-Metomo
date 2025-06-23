@@ -56,7 +56,6 @@ const AchievementsSection = () => {
     },
   ];
 
-  // Gestion de la détection viewport et animation
   const { ref, inView } = useInView({
     triggerOnce: false,
     threshold: 0.2,

@@ -15,7 +15,7 @@ import DevModal from "./modals/DevModal";
 import CyberModal from "./modals/CyberModal";
 import CertificationModal from "./modals/CertificationModal";
 
-// Utilise forwardRef pour exposer des méthodes vers l’extérieur
+
 const AboutSection = forwardRef((props, ref) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDevModalOpen, setIsDevModalOpen] = useState(false);
@@ -31,13 +31,13 @@ const AboutSection = forwardRef((props, ref) => {
     threshold: 0.2,
   });
 
-  // Combine refs (for scroll + inView)
+  
   const setRefs = (node) => {
     sectionDomRef.current = node;
     inViewRef(node);
   };
 
-  // Méthode exposée au parent
+ 
   useImperativeHandle(ref, () => ({
     goToSkills: () => {
       startTransition(() => {
@@ -95,7 +95,7 @@ const AboutSection = forwardRef((props, ref) => {
                 label: "Website",
                 url: "https://getsmarter-group.com/",
               },
-              // Tu peux ajouter d'autres liens ici
+             
             ].map(({ label, url }, idx) => (
               <li
                 key={idx}

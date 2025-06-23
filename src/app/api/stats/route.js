@@ -15,7 +15,6 @@ export async function GET() {
     // 2. Gestion des visiteurs
     let visitorData;
     if (!fs.existsSync(visitorsPath)) {
-      // Crée le fichier s'il n'existe pas
       visitorData = { count: 0 };
       fs.writeFileSync(visitorsPath, JSON.stringify(visitorData));
     } else {

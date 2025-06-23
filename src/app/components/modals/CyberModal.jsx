@@ -14,9 +14,9 @@ import {
   FaWifi,
   FaSearch,
 } from "react-icons/fa";
-import { SiWireshark } from "react-icons/si"; // garder si ok avec ta version
+import { SiWireshark } from "react-icons/si"; 
 
-// SVG inline custom pour Metasploit (simplifié, style logo)
+
 const SvgMetasploit = (props) => (
   <svg
     {...props}
@@ -36,7 +36,7 @@ const SvgMetasploit = (props) => (
   </svg>
 );
 
-// SVG inline custom pour Wifite (symbole Wi-Fi stylisé)
+
 const SvgWifite = (props) => (
   <svg
     {...props}
@@ -61,7 +61,6 @@ const SvgWifite = (props) => (
   </svg>
 );
 
-// SVG inline custom pour Airdump-ng (antenne / ondes stylisées)
 const SvgAirdump = (props) => (
   <svg
     {...props}
@@ -151,12 +150,11 @@ const CyberModal = ({ onClose }) => {
           &times;
         </button>
 
-        {/* Titre */}
+        
         <h3 className="text-2xl font-bold mb-4 text-white">
           🛡️ Cybersécurité / Pentesting & Administration Système
         </h3>
 
-        {/* Introduction */}
         <p className="text-base lg:text-lg leading-relaxed text-gray-300 mb-6">
           Passionné par la cybersécurité et l'administration des systèmes, je
           réalise des tests d'intrusion et gère la sécurité des réseaux,

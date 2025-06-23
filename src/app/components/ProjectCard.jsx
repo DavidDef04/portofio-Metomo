@@ -44,7 +44,7 @@ const ProjectCard = ({ imgUrl, title, description, gitUrl, linkUrl }) => {
               <i className="ri-file-text-line text-xl text-white/70 group-hover/icon:text-white"></i>
             </button>
             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 text-xs text-white bg-black px-2 py-1 rounded opacity-0 group-hover/icon:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              {isExpanded ? "Réduire la description" : "Lire toute la description"}
+              {isExpanded ? "Reduce description" : "Read the full description"}
             </span>
           </div>
 
@@ -59,7 +59,7 @@ const ProjectCard = ({ imgUrl, title, description, gitUrl, linkUrl }) => {
               <i className="ri-eye-line text-xl text-white/70 group-hover/icon:text-white"></i>
             </Link>
             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 text-xs text-white bg-black px-2 py-1 rounded opacity-0 group-hover/icon:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-              Voir le projet
+              See the project
             </span>
           </div>
         </motion.div>
