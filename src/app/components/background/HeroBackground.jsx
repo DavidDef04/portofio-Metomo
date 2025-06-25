@@ -1,4 +1,5 @@
 import React from 'react';
+import "../../styles/HeroSection.css";
 
 const HeroBackground = () => {
   return (
@@ -7,14 +8,14 @@ const HeroBackground = () => {
         autoPlay
         muted
         loop
-        className="w-full h-full object-cover rotate-180 sm:translate-y-[-300px] translate-y-0"
+        className="heroBackground w-full h-full object-cover rotate-180 sm:translate-y-[-300px] translate-y-0"
       >
         <source src="/images/background/section1.webm" type="video/webm" />
         Your browser does not support the video tag.
       </video>
 
       {/* Overlay léger sur mobile */}
-      <div className="sm:hidden absolute inset-0 pointer-events-none bg-gradient-to-b from-black/10 via-transparent to-black/10" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/60 via-black/20 to-transparent z-5" />
     </div>
   );
 };

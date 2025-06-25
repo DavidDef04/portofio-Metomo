@@ -1,0 +1,90 @@
+.heroBackground {
+  position: relative; 
+}
+
+@media (max-width: 299px){
+  .heroBackground{
+    top: -450px !important;
+  }
+  .HeroSection{
+    padding-top: 30px;
+  }
+}
+
+@media (min-width: 299px) and (max-width: 366px) {
+  .heroBackground {
+    top: -370px;
+  }
+  .HeroSection{
+    padding-top: 30px;
+  }
+}
+
+@media (min-width: 366px) and (max-width: 499px) {
+  .heroBackground {
+    top: -365px;
+  }
+  .HeroSection{
+    padding-top: 30px;
+  }
+}
+
+@media (min-width: 500px) and (max-width: 639px) {
+  .heroBackground {
+    top: -335px;
+  }
+  .HeroSection{
+    padding-top: 30px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .heroBackground {
+    top: -35px;
+  }
+  .HeroSection{
+    padding-top: 45px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 900px) {
+  .heroBackground {
+    top: -40px;
+  }
+  .HeroSection{
+    padding-top: 45px;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1024px) {
+  .heroBackground {
+    top: -35px;
+  }
+  .HeroSection{
+    padding-top: 45px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .heroBackground {
+    top: -15px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1280px) {
+  .heroBackground {
+    top: -5px;
+  }
+}
+
+@media (min-width: 1281px) and (max-width: 1536px) {
+  .heroBackground {
+    top: -5px;
+  }
+}
+
+@media (min-width: 1537px){
+  .heroBackground{
+    top: 15px;
+  }
+}

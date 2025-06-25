@@ -34,7 +34,7 @@ const projectData = [
     title: "Mon Portfolio",
     description:
       "This project is my personal portfolio, developed to showcase my skills, projects, experiences, and expertise in the field of web development and cybersecurity. Designed with a modern, fluid, and responsive interface, it showcases my technical achievements through intuitive navigation and interactive animations. This portfolio is also a testing ground for the integration of best practices in accessibility, performance, and UX/UI design.",
-    image: "/images/projects/portfolio.png",
+    image: "",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://github.com/DavidDef04/portofio-Metomo",
     tag: ["All", "Web"],

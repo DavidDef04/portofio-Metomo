@@ -25,7 +25,7 @@ const ProjectCard = ({ imgUrl, title, description, gitUrl, linkUrl }) => {
     >
       {/* Image avec overlay */}
       <div
-        className="h-40 md:h-52 w-full bg-cover bg-center rounded-t-xl relative"
+        className="h-40 md:h-52 w-full bg-cover bg-center bg-amber-50 rounded-t-xl relative"
         style={{ backgroundImage: `url(${imgUrl})` }}
       >
         {/* Overlay animé */}
