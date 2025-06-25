@@ -1,8 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { motion } from "framer-motion";
 
-const Preloader = ({ children }) => {
+type PreloaderProps = {
+  children: ReactNode;
+};
+
+const Preloader = ({ children }: PreloaderProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [imagesToLoad] = useState([
     "/images/projects/logo-maisoft.png",
@@ -38,7 +42,7 @@ const Preloader = ({ children }) => {
       <div
         className="fixed inset-0 flex items-center justify-center bg-black z-[9999] overflow-hidden"
         role="status"
-        aria-busy={!isLoaded}
+        aria-busy={Boolean(!isLoaded)}
       >
         <div className="relative flex items-center justify-center w-screen h-screen overflow-hidden">
           <motion.div

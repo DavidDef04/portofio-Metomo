@@ -24,9 +24,10 @@ export default function Home() {
     return () => clearTimeout(timer); 
   }, []);
 
-  if (loading) return <Preloader />;
+
 
   return (
+    <Preloader>
     <main className="flex min-h-screen flex-col bg-black overflow-hidden">
       <NavBar aboutSectionRef={aboutRef} />
       <div className="w-full px-2 py-2 mx-0 sm:px-4 sm:py-3 sm:mx-2 md:px-6 lg:px-20 xl:px-25 overflow-hidden">
@@ -41,5 +42,6 @@ export default function Home() {
       
       <Footer />
     </main>
+    </Preloader>
   );
 }
