@@ -3,7 +3,9 @@ import fs from "fs";
 import path from "path";
 import projectData from "@/data/projects";
 
-const visitorsPath = path.join(process.cwd(), "data", "visitors.json");
+const ANALYTICS_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL
+? `${process.env.NEXT_PUBLIC_ANALYTICS_URL}/api/analytics`
+: "http:localhost:3000/api/analytics";
 
 export async function GET() {
   try {
@@ -13,26 +15,28 @@ export async function GET() {
     ).length;
 
     // 2. Gestion des visiteurs
-    let visitorData;
-    if (!fs.existsSync(visitorsPath)) {
-      visitorData = { count: 0 };
-      fs.writeFileSync(visitorsPath, JSON.stringify(visitorData));
-    } else {
-      visitorData = JSON.parse(fs.readFileSync(visitorsPath, "utf-8"));
-    }
+   const analyticsRes = await fetch(ANALYTICS_URL);
+   const analyticsData = await analyticsRes.json();
+   const visitorCount = Number.isFinite(parseInt(analyticsData.activeUsers))
+   ? parseInt(analyticsData.activeUsers) : 100;
 
-    visitorData.count = (visitorData.count || 0) + 1;
-    fs.writeFileSync(visitorsPath, JSON.stringify(visitorData));
+
 
     // 3. Années d'expérience
-    const startDate = new Date("2024-12-10");
+    const startDate = new Date("2025-01-10");
     const now = new Date();
+
+    if (isNaN(startDate.getTime())){
+      throw new Error("Date de début invalide");
+    }
+
     const yearDiff = now.getFullYear() - startDate.getFullYear();
     const hasHadBirthday =
       now.getMonth() > startDate.getMonth() ||
       (now.getMonth() === startDate.getMonth() &&
         now.getDate() >= startDate.getDate());
-    const experience = hasHadBirthday ? yearDiff : yearDiff - 1;
+    let experience = hasHadBirthday ? yearDiff : yearDiff - 1;
+    experience = experience < 1 ? 1 : experience;
 
     return NextResponse.json({
       projects: projectCount,

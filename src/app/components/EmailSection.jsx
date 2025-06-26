@@ -132,9 +132,9 @@ const EmailSection = () => {
           <div className="socials flex flex-row gap-4 z-10">
             {[
               { href: "https://github.com/DavidDef04", icon: "ri-github-fill", color: "white" },
-              { href: "https://www.linkedin.com/in/david-rené-metomo-elogo-5b0432314", icon: "ri-linkedin-box-fill", color: "#0077B5" },
-              { href: "https://facebook.com/davidrenemetomo", icon: "ri-facebook-box-fill", color: "#1877F2" },
-              { href: "https://wa.me/237656156546", icon: "ri-whatsapp-fill", color: "green" },
+              { href: "https://www.linkedin.com/in/david-rené-metomo-elogo-5b0432314", icon: "ri-linkedin-box-fill", color: "white" },
+              { href: "https://facebook.com/davidrenemetomo", icon: "ri-facebook-box-fill", color: "white" },
+              { href: "https://wa.me/237656156546", icon: "ri-whatsapp-fill", color: "white" },
             ].map(({ href, icon, color }, i) => (
               <motion.div
                 key={href}

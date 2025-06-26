@@ -10,6 +10,7 @@ const NavBar = ({ aboutSectionRef }) => {
   const [navbarOpen, setNavbarOpen] = useState(false);
 
   const navLinks = [
+    { title: "Home", path: "#home" },
     { title: "About", path: "#about" },
     { title: "Skills", path: "#skills", isSkills: true },
     { title: "Projects", path: "#projects" },
@@ -32,13 +33,14 @@ const NavBar = ({ aboutSectionRef }) => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 w-full bg-black/90 z-20 shadow-lg border border-[#33353F]">
-      <div className="flex justify-between items-center p-6 text-white">
-        <Link
-          href="/"
+      <div className="flex justify-between test-md items-center ml-6 sm:ml-10 md:ml-16 lg:ml-16 xl:ml-20 2xl:ml-24 p-6 px-10 text-white">
+        <a
+          href="#home"
+          onClick={(e) => handleNavClick({ path: "#home" }, e)}
           className="text-3xl md:text-5xl font-semibold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent"
         >
           MDR
-        </Link>
+        </a>
 
         {/* Bouton menu mobile */}
         <div className="md:hidden">
@@ -55,8 +57,8 @@ const NavBar = ({ aboutSectionRef }) => {
         </div>
 
         {/* Menu desktop */}
-        <div className="hidden md:block">
-          <ul className="flex space-x-8 font-bold text-xl">
+        <div className="hidden md:block pr-28 text-sm font-light">
+          <ul className="flex space-x-8 font-medium ">
             {navLinks.map((link, index) => (
               <motion.li
                 key={index}

@@ -169,18 +169,18 @@ const CyberModal = ({ onClose }) => {
             { icon: FaBug, label: "Détection de failles", color: "#F87171" },
             {
               icon: FaProjectDiagram,
-              label: "Metasploit (remplacé)",
+              label: "Metasploit",
               color: "#EF4444",
             },
             {
               icon: FaNetworkWired,
-              label: "Nmap (remplacé)",
+              label: "Nmap",
               color: "#3B82F6",
             },
-            { icon: FaTools, label: "Burp Suite (remplacé)", color: "#F59E0B" },
+            { icon: FaTools, label: "Burp Suite", color: "#F59E0B" },
             { icon: SiWireshark, label: "Wireshark", color: "#10B981" },
-            { icon: FaWifi, label: "Wifite (remplacé)", color: "#2563EB" },
-            { icon: FaWifi, label: "Airdump (remplacé)", color: "#8B5CF6" },
+            { icon: FaWifi, label: "Wifite", color: "#2563EB" },
+            { icon: FaWifi, label: "Airdump", color: "#8B5CF6" },
           ]}
         />
 
