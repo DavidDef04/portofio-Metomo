@@ -33,7 +33,7 @@ const ProjectSection = () => {
   return (
     <motion.section
       id="projects"
-      className="relative py-16 px-12 z-10"
+      className="relative py-12 px-4 sm:px-2 md:px-12 z-10"
       ref={ref}
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
@@ -41,7 +41,7 @@ const ProjectSection = () => {
     >
       <AboutBackground />
 
-      <div className="max-w-7xl mx-auto px-8 md:px-16">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-12 text-center z-10">
           My Projects
         </h2>
@@ -58,7 +58,7 @@ const ProjectSection = () => {
           ))}
         </div>
 
-        <ul className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-10 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-6 sm:px-4 md:px-0 w-full">
           {filteredProjects.map((project, index) => (
             <motion.li
               key={project.id}

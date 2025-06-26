@@ -165,7 +165,7 @@ const AboutSection = forwardRef((props, ref) => {
               ease: "linear",
             },
           }}
-          className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto aspect-square rounded-full overflow-hidden border-4 border-blue-500 shadow-lg z-10"
+          className="relative rounded-full w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[320px] md:h-[320px] lg:w-[400px] lg:h-[400px] mx-auto overflow-hidden border-4 border-blue-500 shadow-lg z-10"
         >
           <Image
             src="/images/aboutSection.jpg"

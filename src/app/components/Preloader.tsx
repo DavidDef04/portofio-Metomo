@@ -85,8 +85,8 @@ const Preloader = ({ children }: PreloaderProps) => {
           <motion.div
             initial={{ width: "50px", height: "50px", borderRadius: "50%" }}
             animate={{
-              width: ["150px", "200px", "300px", "400px"],
-              height: ["150px", "200px", "300px", "400px"],
+              width: ["150px", "180px", "250px", "320px"],
+              height: ["150px", "180px", "250px", "320px"],
               backgroundColor: [
                 "#34d399",
                 "#3b82f6",
@@ -102,7 +102,7 @@ const Preloader = ({ children }: PreloaderProps) => {
               repeatType: "loop",
               ease: "easeInOut",
             }}
-            className="absolute rounded-full border-4 border-transparent opacity-40 max-w-full max-h-full sm:w-[200px] sm:h-[200px] md:w-[300px] md:h-[300px]"
+            className="absolute rounded-full border-4 border-transparent opacity-40 max-w-full max-h-full sm:w-[180px] sm:h-[180px] md:w-[250px] md:h-[250px]"
           />
         </div>
       </div>

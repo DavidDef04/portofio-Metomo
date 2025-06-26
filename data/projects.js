@@ -4,7 +4,7 @@ const projectData = [
     title: "EyeSon",
     description:
       "EyeSon is a smart parental control app designed to allow parents to discreetly and effectively monitor their children's digital activity. With advanced features like temporary media collection (photos, videos), EyeSon provides a comprehensive view of a child's digital environment, ensuring their safety and parents' peace of mind.",
-    image: "/images/projects/eyeson.jpg",
+    image: "/images/projects/eyeSon.jpg",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://github.com/EYES-ON-GROUP/eyeson_backend",
     tag: ["All", "Mobile"],
@@ -34,7 +34,7 @@ const projectData = [
     title: "Mon Portfolio",
     description:
       "This project is my personal portfolio, developed to showcase my skills, projects, experiences, and expertise in the field of web development and cybersecurity. Designed with a modern, fluid, and responsive interface, it showcases my technical achievements through intuitive navigation and interactive animations. This portfolio is also a testing ground for the integration of best practices in accessibility, performance, and UX/UI design.",
-    image: "",
+    image: "/images/projects/logo-portfolio.svg",
     gitUrl: "https://github.com/ton-repo/eyeson",
     linkUrl: "https://github.com/DavidDef04/portofio-Metomo",
     tag: ["All", "Web"],

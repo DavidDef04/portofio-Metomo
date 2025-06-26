@@ -7,49 +7,69 @@
     top: -450px !important;
   }
   .HeroSection{
-    padding-top: 30px;
+    padding: 45px 4px;
+  }
+
+  .HeroSection .hero-buttons{
+    padding: 0 4px;
   }
 }
 
 @media (min-width: 299px) and (max-width: 366px) {
   .heroBackground {
-    top: -400px;
+    top: -440px;
   }
+
   .HeroSection{
-    padding-top: 30px;
+    padding: 45px 4px !important;
+  }
+  .HeroSection .hero-buttons{
+    padding: 0 10px !important;
   }
 }
 
 @media (min-width: 366px) and (max-width: 499px) {
   .heroBackground {
-    top: -365px;
+    top: -440px;
   }
   .HeroSection{
-    padding-top: 30px;
+    padding-top: 45px;
+  }
+  .HeroSection .hero-buttons{
+    padding: 0 13px !important;
   }
 }
 
 @media (min-width: 500px) and (max-width: 639px) {
   .heroBackground {
-    top: -335px;
+    top: -440px;
   }
   .HeroSection{
     padding-top: 30px;
+  }
+  .HeroSection .hero-buttons{
+    padding: 0 20px !important;
   }
 }
 
 @media (min-width: 640px) and (max-width: 767px) {
   .heroBackground {
-    top: -35px;
+    top: -150px;
   }
   .HeroSection{
     padding-top: 45px;
   }
 }
 
+@media (min-width: 767px) and (max-width: 900px) {
+  .HeroSection {
+    gap: 1rem !important
+  }
+}
+
 @media (min-width: 768px) and (max-width: 900px) {
   .heroBackground {
-    top: -40px;
+    top: -150px;
   }
   .HeroSection{
     padding-top: 45px;
@@ -58,7 +78,7 @@
 
 @media (min-width: 901px) and (max-width: 1024px) {
   .heroBackground {
-    top: -35px;
+    top: -150px;
   }
   .HeroSection{
     padding-top: 45px;
@@ -67,24 +87,24 @@
 
 @media (min-width: 1025px) and (max-width: 1200px) {
   .heroBackground {
-    top: -15px;
+    top: -72px;
   }
 }
 
 @media (min-width: 1201px) and (max-width: 1280px) {
   .heroBackground {
-    top: -5px;
+    top: -70px;
   }
 }
 
 @media (min-width: 1281px) and (max-width: 1536px) {
   .heroBackground {
-    top: -5px;
+    top: -10px;
   }
 }
 
 @media (min-width: 1537px){
   .heroBackground{
-    top: 15px;
+    top: -10px;
   }
 }

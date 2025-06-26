@@ -24,7 +24,7 @@ const HeroSection = () => {
       className="relative lg:py-16"
     >
       <HeroBackground />
-      <div className="HeroSection mt-20 sm:mt-20 md:mt-24 lg:mt-28 xl:mt-32 grid grid-cols-1 sm:grid-cols-12 gap-8 sm:gap-16 mb-4">
+      <div className="HeroSection mt-20 sm:mt-20 md:mt-24 lg:mt-28 xl:mt-32 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 mb-4">
         {/* Texte animé */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -70,7 +70,7 @@ const HeroSection = () => {
             designed with ❤️, technical flair, and creativity.
           </p>
 
-          <div className="hero-buttons hero-buttons-501 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <div className="hero-buttons flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <motion.button
               whileTap={{ scale: 0.9, rotate: -2 }}
               onClick={() => {
@@ -98,17 +98,17 @@ const HeroSection = () => {
           initial={{ opacity: 0, x: 50 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="hero-image hero-image-501 col-span-1 sm:col-span-5 flex justify-center items-center place-self-center mt-6 lg:mt-0"
+          className="hero-image hero-image-501 col-span-1 sm:col-span-5 flex justify-center items-center place-self-center mt-6 lg:mt-0 z-15"
         >
           <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="image-wrapper image-wrapper-501 rounded-full w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[320px] md:h-[320px] lg:w-[400px] lg:h-[400px] bg-[#181818] overflow-hidden relative"
+            className="image-wrapper rounded-full w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] md:w-[320px] md:h-[320px] lg:w-[400px] lg:h-[400px] bg-white/20 backdrop-blur backdrop-brightness-125 border border-white/10 overflow-hidden relative"
           >
             <Image
               src="/images/Profil.jpg"
               alt="Profile Picture"
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover z-20"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover z-20 brightness-[1.4]"
               width={300}
               height={300}
             />

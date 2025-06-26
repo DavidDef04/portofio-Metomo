@@ -1,18 +1,8 @@
+import Script from "next/script";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import StarCanvas from "./components/background/StarBackground";
 import ClientWrapper from "./components/ClientWrapper";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import StarCanvas from "./components/background/StarBackground";
 
 export const metadata: Metadata = {
   title: "MDR_Portfolio",
@@ -21,14 +11,31 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#030014] overflow-y-scroll overflow-x-hidden`}
-      >
+    <html lang="en">
+      <head>
+        {/* Google Analytics - à rendre en premier */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-J2WJ9P98FB"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-J2WJ9P98FB');
+          `}
+        </Script>
+      </head>
+      <body className="bg-[#030014] antialiased">
         <StarCanvas />
-        <ClientWrapper>{children}</ClientWrapper>
+        <ClientWrapper>
+        {children}
+        </ClientWrapper>
       </body>
     </html>
   );

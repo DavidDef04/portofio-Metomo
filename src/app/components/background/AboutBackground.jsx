@@ -2,7 +2,7 @@ import React from "react";
 
 const AboutBackground = () => {
   return (
-    <div className="absolute inset-0 z-1 max-w-7xl mx-auto px-8 md:px-16 w-full h-full overflow-hidden">
+    <div className="absolute mx-auto inset-0 z-0 w-full h-full overflow-hidden">
       <video
         autoPlay
         muted

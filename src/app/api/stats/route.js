@@ -25,7 +25,7 @@ export async function GET() {
     fs.writeFileSync(visitorsPath, JSON.stringify(visitorData));
 
     // 3. Années d'expérience
-    const startDate = new Date("2025-01-10");
+    const startDate = new Date("2024-12-10");
     const now = new Date();
     const yearDiff = now.getFullYear() - startDate.getFullYear();
     const hasHadBirthday =
