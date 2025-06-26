@@ -36,7 +36,8 @@ export async function GET() {
       activeUsers: response.data.rows?.[0]?.metricValues?.[0]?.value || 0,
     });
   } catch (error) {
-    console.error("Erreur API GA4:", error.response?.data || error.message || error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    const err = error as any;
+    console.error("Error fetching GA4 data:",err.reponse?.data || err.message || err);
+    return NextResponse.json({error: "Failed to fetch GA4 data"}, { status: 500 });
   }
 }
