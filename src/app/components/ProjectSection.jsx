@@ -41,7 +41,7 @@ const ProjectSection = () => {
     >
       <AboutBackground />
 
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 relative z-10">
+      <div className="w-full px-4 pt-2 sm:px-6 md:px-8 lg:px-12 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-12 text-center z-10">
           My Projects
         </h2>

@@ -1,51 +1,78 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import projectData from "@/data/projects";
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
-const ANALYTICS_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL
-? `${process.env.NEXT_PUBLIC_ANALYTICS_URL}/api/analytics`
-: "http:localhost:3000/api/analytics";
+// Initialisation du client GA4 avec le fichier de clé JSON
+const analyticsDataClient = new BetaAnalyticsDataClient({
+  keyFile: "secrets/ga4-service-account.json", // assure-toi que ce nom est correct
+});
+
+const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID;
+
+// Fonction pour calculer les années d'expérience à partir d'une date
+function calculateExperience(startDate, endDate = new Date()) {
+  if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
+    throw new Error("Date de début invalide");
+  }
+
+  if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
+    endDate = new Date();
+  }
+
+  let years = endDate.getFullYear() - startDate.getFullYear();
+  let months = endDate.getMonth() - startDate.getMonth();
+  let days = endDate.getDate() - startDate.getDate();
+
+  if (days < 0) months -= 1;
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  return parseFloat((years + months / 12).toFixed(2));
+}
+
+// Fonction pour récupérer le total d’utilisateurs sur toute la durée
+async function fetchTotalUsersGA4() {
+  try {
+    const [response] = await analyticsDataClient.runReport({
+      property: `properties/${GA4_PROPERTY_ID}`,
+      dateRanges: [{ startDate: "2020-01-01", endDate: "today" }], // toute l’historique
+      metrics: [{ name: "totalUsers" }],
+    });
+
+    if (response.rows && response.rows.length > 0) {
+      const totalUsers = parseInt(response.rows[0].metricValues[0].value, 10);
+      return Number.isFinite(totalUsers) ? totalUsers : 0;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error("Erreur récupération visiteurs GA4 :", error);
+    return 0;
+  }
+}
 
 export async function GET() {
   try {
-    // 1. Nombre de projets
+    // Nombre de projets (tu as dit que cela fonctionne déjà très bien)
     const projectCount = projectData.filter((p) =>
       p.tag.includes("All")
     ).length;
 
-    // 2. Gestion des visiteurs
-   const analyticsRes = await fetch(ANALYTICS_URL);
-   const analyticsData = await analyticsRes.json();
-   const visitorCount = Number.isFinite(parseInt(analyticsData.activeUsers))
-   ? parseInt(analyticsData.activeUsers) : 100;
+    // Visiteurs depuis Google Analytics
+    const visitorCount = await fetchTotalUsersGA4();
 
-
-
-    // 3. Années d'expérience
-    const startDate = new Date("2025-01-10");
-    const now = new Date();
-
-    if (isNaN(startDate.getTime())){
-      throw new Error("Date de début invalide");
-    }
-
-    const yearDiff = now.getFullYear() - startDate.getFullYear();
-    const hasHadBirthday =
-      now.getMonth() > startDate.getMonth() ||
-      (now.getMonth() === startDate.getMonth() &&
-        now.getDate() >= startDate.getDate());
-    let experience = hasHadBirthday ? yearDiff : yearDiff - 1;
-    experience = experience < 1 ? 1 : experience;
+    // Années d'expérience depuis fin formation (10 octobre 2024)
+    const finFormation = new Date("2024-10-10");
+    const experience = calculateExperience(finFormation);
 
     return NextResponse.json({
-      projects: projectCount,
-      visitors: visitorData.count,
+      visitors: visitorCount,
       experience: experience < 1 ? 1 : experience,
     });
   } catch (error) {
     console.error("Erreur API /api/stats :", error);
-    console.error(error.stack);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

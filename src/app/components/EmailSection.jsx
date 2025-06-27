@@ -34,7 +34,7 @@ const EmailSection = () => {
   useEffect(() => {
     if (isInView) {
       controls.start({ opacity: 1, y: 0 });
-    } else{
+    } else {
       controls.start({ opacity: 0, y: 50 });
     }
   }, [isInView, controls]);
@@ -44,7 +44,13 @@ const EmailSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const [popupCount, setPopupCount] = useState(0); 
+  const [popupCount, setPopupCount] = useState(0);
+
+  const [subjectLength, setSubjectLength] = useState(0);
+  const [messageLength, setMessageLength] = useState(0);
+
+  const MAX_SUBJECT_LENGTH = 30;
+  const MAX_MESSAGE_LENGTH = 150;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +58,7 @@ const EmailSection = () => {
     setIsLoading(true);
     setProgress(0);
     setShowPopup(true);
-    setPopupCount((c) => c + 1); 
+    setPopupCount((c) => c + 1);
     const duration = 4000;
     const intervalTime = 50;
     let elapsed = 0;
@@ -123,29 +129,47 @@ const EmailSection = () => {
           transition={{ duration: 1, delay: 0.2 }}
           className="text-xl font-bold text-white my-2 z-10"
         >
-          <h5 className="text-xl font-bold z-10">Let's Connect...</h5>
-          <p className="text-[#ADB7BE] mb-5 max-w-md z-10">
-            I'm currently looking for new opportunities, my inbox is always open.
-            Whether you have a question or just want to say hi, I'll try my best to get back to you!
+          <h5 className="text-lg sm:text-xl md:text-2xl font-bold z-10">
+            Let's Connect...
+          </h5>
+
+          <p className="text-sm sm:text-base md:text-lg text-[#ADB7BE] mb-5 max-w-md z-10">
+            I'm currently looking for new opportunities, my inbox is always
+            open. Whether you have a question or just want to say hi, I'll try
+            my best to get back to you!
           </p>
+
           <br />
           <div className="socials flex flex-row gap-4 z-10">
             {[
-              { href: "https://github.com/DavidDef04", icon: "ri-github-fill", color: "white" },
-              { href: "https://www.linkedin.com/in/david-rené-metomo-elogo-5b0432314", icon: "ri-linkedin-box-fill", color: "white" },
-              { href: "https://facebook.com/davidrenemetomo", icon: "ri-facebook-box-fill", color: "white" },
-              { href: "https://wa.me/237656156546", icon: "ri-whatsapp-fill", color: "white" },
-            ].map(({ href, icon, color }, i) => (
+              {
+                href: "https://github.com/DavidDef04",
+                icon: "ri-github-fill",
+                color: "white",
+              },
+              {
+                href: "https://www.linkedin.com/in/david-rené-metomo-elogo-5b0432314",
+                icon: "ri-linkedin-box-fill",
+                color: "white",
+              },
+              {
+                href: "https://facebook.com/davidrenemetomo",
+                icon: "ri-facebook-box-fill",
+                color: "white",
+              },
+              {
+                href: "https://wa.me/237656156546",
+                icon: "ri-whatsapp-fill",
+                color: "white",
+              },
+            ].map(({ href, icon, color }) => (
               <motion.div
                 key={href}
                 whileHover={{ scale: 1.15 }}
                 className="cursor-pointer z-10 transition-transform transform duration-300"
               >
                 <Link href={href} target="_blank" rel="noopener noreferrer">
-                  <i
-                    className={`${icon} text-3xl`}
-                    style={{ color }}
-                  ></i>
+                  <i className={`${icon} text-3xl`} style={{ color }}></i>
                 </Link>
               </motion.div>
             ))}
@@ -159,50 +183,63 @@ const EmailSection = () => {
           transition={{ duration: 1, delay: 0.4 }}
         >
           <form className="flex flex-col z-10" onSubmit={handleSubmit}>
-            {[
-              {
-                label: "Your email",
-                id: "email",
-                type: "email",
-                name: "email",
-                placeholder: "exemple@gmail.com",
-                required: true,
-              },
-              {
-                label: "Subject",
-                id: "subject",
-                type: "text",
-                name: "subject",
-                placeholder: "Just saying hi!",
-                required: true,
-              },
-            ].map(({ label, id, type, name, placeholder, required }, i) => (
-              <motion.div
-                key={id}
-                className="mb-2 z-10"
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                custom={i}
+            {/* Email Field */}
+            <motion.div
+              className="mb-2 z-10"
+              variants={inputVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0}
+            >
+              <label
+                htmlFor="email"
+                className="text-white block mb-2 font-medium text-sm"
               >
-                <label
-                  htmlFor={id}
-                  className="text-white block mb-2 font-medium text-sm"
-                >
-                  {label}
-                </label>
-                <input
-                  name={name}
-                  autoComplete={type === "email" ? "email" : undefined}
-                  className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
-                  type={type}
-                  id={id}
-                  placeholder={placeholder}
-                  required={required}
-                />
-              </motion.div>
-            ))}
+                Your email
+              </label>
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="exemple@gmail.com"
+                required
+                maxLength={50}
+                className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
+              />
+            </motion.div>
 
+            {/* Subject Field */}
+            <motion.div
+              className="mb-2 z-10"
+              variants={inputVariants}
+              initial="hidden"
+              animate="visible"
+              custom={1}
+            >
+              <label
+                htmlFor="subject"
+                className="text-white block mb-2 font-medium text-sm"
+              >
+                Subject
+              </label>
+              <input
+                name="subject"
+                type="text"
+                id="subject"
+                placeholder="Just saying hi!"
+                required
+                maxLength={MAX_SUBJECT_LENGTH}
+                onChange={(e) => setSubjectLength(e.target.value.length)}
+                className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
+              />
+              {subjectLength > 0 && (
+                <p className="text-xs text-gray-400 mt-1">
+                {subjectLength}/{MAX_SUBJECT_LENGTH} characters
+              </p>
+              )}
+            </motion.div>
+
+            {/* Message Field */}
             <motion.div
               className="mb-6 z-10"
               variants={inputVariants}
@@ -218,12 +255,19 @@ const EmailSection = () => {
               </label>
               <textarea
                 name="message"
-                className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
                 id="message"
                 rows="4"
                 placeholder="Tell me about your ideas!"
                 required
+                maxLength={MAX_MESSAGE_LENGTH}
+                onChange={(e) => setMessageLength(e.target.value.length)}
+                className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
               ></textarea>
+              {messageLength > 0 && (
+                <p className="text-xs text-gray-400 mt-1">
+                {messageLength}/{MAX_MESSAGE_LENGTH} characters
+              </p>
+              )}
             </motion.div>
 
             <motion.button
@@ -273,7 +317,7 @@ const EmailSection = () => {
       <AnimatePresence>
         {showPopup && (
           <motion.div
-            key={`popup-${popupCount}`} 
+            key={`popup-${popupCount}`}
             variants={popupVariants}
             initial="hidden"
             animate="visible"

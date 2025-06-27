@@ -8,6 +8,7 @@ import EmailSection from "./components/EmailSection";
 import Footer from "./components/Footer";
 import AchievementsSection from "./components/AchievementsSection";
 import Preloader from "./components/Preloader";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import TechSlider from "./components/TechSlider";
 
 
@@ -37,7 +38,7 @@ export default function Home() {
         <ProjectSection />
         {/* <TechSlider /> */}
         <EmailSection />
-        {/* <ScrollToTopButton/> */}
+        <ScrollToTopButton/>
       </div>
       
       <Footer />
