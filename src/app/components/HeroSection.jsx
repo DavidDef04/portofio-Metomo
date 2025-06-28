@@ -108,7 +108,7 @@ const HeroSection = () => {
             <Image
               src="/images/Profil.jpg"
               alt="Profile Picture"
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover z-20 brightness-[1.4]"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover z-15 brightness-[1.4]"
               width={300}
               height={300}
             />

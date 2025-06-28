@@ -130,7 +130,7 @@ const CyberModal = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 1 }}
-      className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center px-4"
+      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center px-4 z-25"
       onClick={onClose}
     >
       <motion.div

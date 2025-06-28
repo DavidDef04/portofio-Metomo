@@ -4,7 +4,7 @@ import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
 // Initialisation du client GA4 avec le fichier de clé JSON
 const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFile: "secrets/ga4-service-account.json", // assure-toi que ce nom est correct
+  keyFile: "secrets/ga4-service-account.json", 
 });
 
 const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID;
@@ -37,7 +37,7 @@ async function fetchTotalUsersGA4() {
   try {
     const [response] = await analyticsDataClient.runReport({
       property: `properties/${GA4_PROPERTY_ID}`,
-      dateRanges: [{ startDate: "2020-01-01", endDate: "today" }], // toute l’historique
+      dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
       metrics: [{ name: "totalUsers" }],
     });
 
@@ -55,7 +55,7 @@ async function fetchTotalUsersGA4() {
 
 export async function GET() {
   try {
-    // Nombre de projets (tu as dit que cela fonctionne déjà très bien)
+    // Nombre de projets 
     const projectCount = projectData.filter((p) =>
       p.tag.includes("All")
     ).length;
@@ -63,7 +63,7 @@ export async function GET() {
     // Visiteurs depuis Google Analytics
     const visitorCount = await fetchTotalUsersGA4();
 
-    // Années d'expérience depuis fin formation (10 octobre 2024)
+    // Années d'expérience depuis fin formation
     const finFormation = new Date("2024-10-10");
     const experience = calculateExperience(finFormation);
 

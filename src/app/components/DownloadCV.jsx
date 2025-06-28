@@ -59,7 +59,7 @@ const DownloadCV = ({ className, label = "Download CV" }) => {
   return (
     <>
       <button onClick={handleDownloadClick} className={className}>
-        <span className="block font-extrabold rounded-full px-2 py-1">
+        <span className="block font-extrabold rounded-full px-2 py-1 z-100">
           {label}
         </span>
       </button>
@@ -68,7 +68,7 @@ const DownloadCV = ({ className, label = "Download CV" }) => {
         <div
           onClick={() => setShowCaptcha(false)} 
           className="fixed top-0 left-0 w-screen h-screen z-50"
-          style={{ cursor: "default" }} // optionnel
+          style={{ cursor: "default" }}
         >
           <div
             onClick={(e) => e.stopPropagation()} 

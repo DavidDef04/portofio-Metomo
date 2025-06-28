@@ -99,7 +99,7 @@ const DevModal = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 2 }}
       exit={{ opacity: 1 }}
-      className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center px-4"
+      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center px-4 z-25"
       onClick={onClose} // Clic hors modal ferme le modal
     >
       <motion.div
@@ -108,7 +108,7 @@ const DevModal = ({ onClose }) => {
         exit={{ y: 50, opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="bg-[#1e1e1e] rounded-lg max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh] relative"
-        onClick={(e) => e.stopPropagation()} // Empêche la fermeture si clic dans le modal
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Bouton de fermeture */}
         <button

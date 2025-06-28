@@ -50,7 +50,7 @@ const EmailSection = () => {
   const [messageLength, setMessageLength] = useState(0);
 
   const MAX_SUBJECT_LENGTH = 30;
-  const MAX_MESSAGE_LENGTH = 150;
+  const MAX_MESSAGE_LENGTH = 250;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -203,7 +203,7 @@ const EmailSection = () => {
                 autoComplete="email"
                 placeholder="exemple@gmail.com"
                 required
-                maxLength={50}
+                maxLength={70}
                 className="bg-[#181818] border border-[#121212] text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 placeholder:text-[#ADB7BE]"
               />
             </motion.div>
