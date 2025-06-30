@@ -98,7 +98,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, x: 50 }}
           animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="hero-image hero-image-501 col-span-1 sm:col-span-5 flex justify-center items-center place-self-center mt-6 lg:mt-0 z-15"
+          className="hero-image hero-image-501 col-span-1 sm:col-span-5 flex justify-center items-center place-self-center mt-6 lg:mt-0"
         >
           <motion.div
             animate={{ y: [0, -10, 0] }}
@@ -108,7 +108,7 @@ const HeroSection = () => {
             <Image
               src="/images/Profil.jpg"
               alt="Profile Picture"
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover z-15 brightness-[1.4]"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 object-cover brightness-[1.4]"
               width={300}
               height={300}
             />

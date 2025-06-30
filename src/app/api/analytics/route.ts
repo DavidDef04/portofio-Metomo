@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
-import path from "path";
-import fs from "fs";
 
-const KEYFILEPATH = path.join(process.cwd(), "secrets", "ga4-service-account.json");
 const SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"];
-const PROPERTY_ID = "494630808";
+const PROPERTY_ID = "494630808"; // ou process.env.GA4_PROPERTY_ID
 
 export async function GET() {
   try {
-    const keyFile = JSON.parse(fs.readFileSync(KEYFILEPATH, "utf-8"));
-    console.log("Key file loaded:", keyFile.client_email);
+    const rawJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+    if (!rawJson) {
+      console.error("Clé JSON non trouvée dans les variables d’environnement.");
+      return NextResponse.json({ error: "Clé JSON manquante" }, { status: 500 });
+    }
+
+    const credentials = JSON.parse(rawJson);
+    console.log("Service account email:", credentials.client_email);
 
     const auth = new google.auth.GoogleAuth({
-      credentials: keyFile,
+      credentials,
       scopes: SCOPES,
     });
 
@@ -30,14 +34,12 @@ export async function GET() {
       },
     });
 
-    console.log("GA4 response:", response.data);
+    const activeUsers = Number(response.data.rows?.[0]?.metricValues?.[0]?.value) || 0;
+    console.log("Utilisateurs actifs (7 derniers jours):", activeUsers);
 
-    return NextResponse.json({
-      activeUsers: response.data.rows?.[0]?.metricValues?.[0]?.value || 0,
-    });
-  } catch (error) {
-    const err = error as any;
-    console.error("Error fetching GA4 data:",err.reponse?.data || err.message || err);
-    return NextResponse.json({error: "Failed to fetch GA4 data"}, { status: 500 });
+    return NextResponse.json({ activeUsers });
+  } catch (error: any) {
+    console.error("Erreur API GA4:", error.response?.data || error.message || error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
