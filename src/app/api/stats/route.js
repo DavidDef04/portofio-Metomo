@@ -1,22 +1,13 @@
 import { NextResponse } from "next/server";
 import projectData from "@/data/projects";
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import { google } from "googleapis";
 
-// Initialisation du client GA4 avec le fichier de clé JSON
-const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFile: "secrets/ga4-service-account.json", 
-});
+const SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"];
+const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID || "494630808";
 
-const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID;
-
-// Fonction pour calculer les années d'expérience à partir d'une date
 function calculateExperience(startDate, endDate = new Date()) {
   if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
     throw new Error("Date de début invalide");
-  }
-
-  if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
-    endDate = new Date();
   }
 
   let years = endDate.getFullYear() - startDate.getFullYear();
@@ -32,38 +23,48 @@ function calculateExperience(startDate, endDate = new Date()) {
   return parseFloat((years + months / 12).toFixed(2));
 }
 
-// Fonction pour récupérer le total d’utilisateurs sur toute la durée
 async function fetchTotalUsersGA4() {
+  const rawJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+  if (!rawJson) {
+    console.error("Clé JSON manquante dans les variables d’environnement.");
+    return 0;
+  }
+
+  const credentials = JSON.parse(rawJson);
+
+  const auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: SCOPES,
+  });
+
+  const analyticsDataClient = google.analyticsdata({
+    version: "v1beta",
+    auth,
+  });
+
   try {
-    const [response] = await analyticsDataClient.runReport({
+    const response = await analyticsDataClient.properties.runReport({
       property: `properties/${GA4_PROPERTY_ID}`,
-      dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
-      metrics: [{ name: "totalUsers" }],
+      requestBody: {
+        dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
+        metrics: [{ name: "totalUsers" }],
+      },
     });
 
-    if (response.rows && response.rows.length > 0) {
-      const totalUsers = parseInt(response.rows[0].metricValues[0].value, 10);
-      return Number.isFinite(totalUsers) ? totalUsers : 0;
-    }
-
-    return 0;
+    const totalUsers = parseInt(response.data.rows?.[0]?.metricValues?.[0]?.value || "0", 10);
+    return Number.isFinite(totalUsers) ? totalUsers : 0;
   } catch (error) {
-    console.error("Erreur récupération visiteurs GA4 :", error);
+    console.error("Erreur GA4:", error);
     return 0;
   }
 }
 
 export async function GET() {
   try {
-    // Nombre de projets 
-    const projectCount = projectData.filter((p) =>
-      p.tag.includes("All")
-    ).length;
-
-    // Visiteurs depuis Google Analytics
+    const projectCount = projectData.filter((p) => p.tag.includes("All")).length;
     const visitorCount = await fetchTotalUsersGA4();
 
-    // Années d'expérience depuis fin formation
     const finFormation = new Date("2024-10-10");
     const experience = calculateExperience(finFormation);
 
