@@ -1,104 +1,134 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import projectData from "@/data/projects";
+import SectionHeader from "./ui/SectionHeader";
+import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const AnimatedNumbers = dynamic(() => import("react-animated-numbers"), {
   ssr: false,
 });
 
 const AchievementsSection = () => {
-  const totalProjects = Array.isArray(projectData)
-    ? projectData.filter((p) => p.tag.includes("All")).length
-    : 0;
-
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    projects: totalProjects,
-    visitors: 2,
-    experience: 3,
+    projects: 0,
+    visitors: 0,
+    experience: 0,
+    experienceSince: "2023",
   });
 
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
+
   useEffect(() => {
-    const fetchStats = async () => {
+    const load = async () => {
       try {
-        const res = await fetch("/api/stats");
-        const data = await res.json();
-        setStats((prev) => ({
-          ...prev,
-          visitors: data.visitors,
-          experience: data.experience,
-        }));
-      } catch (error) {
-        console.error("Erreur lors du chargement des stats :", error);
+        const [projectsRes, statsRes] = await Promise.all([
+          fetch("/api/projects", { cache: "no-store" }),
+          fetch("/api/stats", { cache: "no-store" }),
+        ]);
+
+        const projectsData = await projectsRes.json();
+        const statsData = await statsRes.json();
+
+        const projectCount = projectsData.success
+          ? projectsData.count ?? projectsData.projects?.length ?? 0
+          : Array.isArray(projectData)
+            ? projectData.length
+            : 0;
+
+        setStats({
+          projects: projectCount,
+          visitors: statsData.visitors ?? 0,
+          experience: statsData.experience ?? 0,
+          experienceSince: statsData.experienceSince ?? "2023",
+        });
+      } catch {
+        const staticCount = Array.isArray(projectData) ? projectData.length : 0;
+        setStats((s) => ({ ...s, projects: staticCount }));
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    fetchStats();
+    load();
   }, []);
 
-  const achievementsList = [
+  const metrics = [
     {
-      metric: "Projects",
       value: stats.projects,
-      postfix: "+",
+      label: "Livrables produit",
+      suffix: "+",
+      detail: "Projets & dépôts actifs",
     },
     {
-      prefix: "~",
-      metric: "Users",
       value: stats.visitors,
-      postfix: "+",
+      label: "Sessions qualifiées",
+      prefix: "~",
+      suffix: "+",
+      detail: "Audience portfolio",
     },
     {
-      metric: "Years",
       value: stats.experience,
+      label: "Années de pratique",
+      suffix: "",
+      detail: `Depuis ${stats.experienceSince}`,
+      decimals: 1,
     },
   ];
 
-  const { ref, inView } = useInView({
-    triggerOnce: false,
-    threshold: 0.2,
-  });
-
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="py-8 px-4 sm:py-16 sm:px-8 xl:px-12"
-    >
-      <div className="border-[#33353F] border rounded-md py-8 px-4 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-4">
-        {achievementsList.map((achievement, index) => (
-          <div
-            key={index}
-            className="flex flex-col items-center justify-center w-full sm:w-1/2 md:w-1/4"
+    <section id="achievements" ref={ref} className="section-shell relative">
+      <SectionHeader
+        label="Impact mesurable"
+        title="Des chiffres qui"
+        titleAccent="parlent de rigueur"
+        description="Projets livrés, visiteurs du portfolio et années de pratique — des indicateurs simples et vérifiables."
+        align="center"
+      />
+
+      <motion.div
+        className="grid md:grid-cols-3 gap-px bg-border max-w-4xl mx-auto"
+        variants={staggerContainer}
+        initial="hidden"
+        animate={inView ? "visible" : "hidden"}
+      >
+        {metrics.map((m, i) => (
+          <motion.div
+            key={m.label}
+            variants={fadeUp}
+            custom={i}
+            className="surface-card !rounded-none p-10 md:p-12 text-center group hover:bg-elevated/80 transition-colors duration-500"
           >
-            <h2 className="text-white text-4xl font-bold flex items-center">
-              {achievement.prefix && (
-                <span className="mr-1">{achievement.prefix}</span>
+            <div
+              className="font-display text-5xl md:text-6xl text-bone font-semibold tabular-nums mb-3 flex items-center justify-center gap-0.5"
+              aria-label={`${m.prefix ?? ""}${m.value}${m.suffix ?? ""}`}
+            >
+              {m.prefix && <span>{m.prefix}</span>}
+              {isLoading ? (
+                <span className="text-mist">—</span>
+              ) : m.decimals ? (
+                <span>{Number(m.value).toFixed(1)}</span>
+              ) : (
+                <AnimatedNumbers
+                  animateToNumber={Math.round(m.value)}
+                  locale="fr-CM"
+                  configs={(_, idx) => ({
+                    mass: 1,
+                    friction: 100,
+                    tension: 120 * (idx + 1),
+                  })}
+                />
               )}
-              <AnimatedNumbers
-                includeComma
-                animateToNumber={achievement.value}
-                locale="fr-CM"
-                className="text-white text-4xl font-bold"
-                configs={(_, i) => ({
-                  mass: 1,
-                  friction: 100,
-                  tension: 140 * i,
-                })}
-              />
-              {achievement.postfix && (
-                <span className="ml-1">{achievement.postfix}</span>
-              )}
-            </h2>
-            <p className="text-[#ADB7BE] text-center mt-2">{achievement.metric}</p>
-          </div>
+              {m.suffix && <span>{m.suffix}</span>}
+            </div>
+            <p className="text-bone font-medium mb-1">{m.label}</p>
+            <p className="text-mist text-sm">{m.detail}</p>
+          </motion.div>
         ))}
-      </div>
-    </motion.div>
+      </motion.div>
+    </section>
   );
 };
 

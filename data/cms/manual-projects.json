@@ -1,0 +1,35 @@
+[
+  {
+    "id": "legacy-1",
+    "title": "EyeSon",
+    "description": "Application de contrôle parental — collecte temporaire de médias et surveillance de l'activité numérique des enfants.",
+    "image": "/images/projects/eyeSon.jpg",
+    "githubUrl": "https://github.com/EYES-ON-GROUP/eyeson_backend",
+    "liveUrl": "https://github.com/EYES-ON-GROUP/eyeson_backend",
+    "category": "Mobile",
+    "technologies": [
+      "Mobile"
+    ],
+    "visible": true,
+    "featured": true,
+    "order": 10,
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "legacy-4",
+    "title": "Portfolio Personnel",
+    "description": "Portfolio personnel — compétences, projets et parcours en développement et cybersécurité.",
+    "image": "/images/projects/logo-portfolio.svg",
+    "githubUrl": "https://github.com/DavidDef04/portofio-Metomo",
+    "liveUrl": "https://github.com/DavidDef04/portofio-Metomo",
+    "category": "Web",
+    "technologies": [
+      "Next.js",
+      "React"
+    ],
+    "visible": true,
+    "featured": true,
+    "order": 20,
+    "updatedAt": "2026-05-23T11:32:21.547Z"
+  }
+]

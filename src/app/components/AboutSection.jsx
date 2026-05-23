@@ -55,7 +55,7 @@ const AboutSection = forwardRef((props, ref) => {
 
   const TAB_DATA = [
     {
-      title: "Skills",
+      title: "Compétences",
       id: "skills",
       content: (
         <ul className="list-disc pl-5 space-y-4">
@@ -64,21 +64,21 @@ const AboutSection = forwardRef((props, ref) => {
             className="relative group cursor-pointer font-medium text-blue-400 hover:text-white transition"
           >
             <motion.div layoutId="dev-modal-button" className="inline-block" />
-            💻 Full-Stack Development (Web & Mobile)
+            💻 Développement Full-Stack (Web & Mobile)
             <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 transition-all duration-500 group-hover:w-full"></span>
           </li>
           <li
             onClick={() => setIsCyberModalOpen(true)}
             className="relative group cursor-pointer font-medium text-blue-400 hover:text-white transition"
           >
-            🛡️ Cybersecurity / Pentesting
+            🛡️ Cybersécurité / Tests d'intrusion
             <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 transition-all duration-500 group-hover:w-full"></span>
           </li>
         </ul>
       ),
     },
     {
-      title: "Education",
+      title: "Formation",
       id: "education",
       content: (
         <div>
@@ -92,7 +92,7 @@ const AboutSection = forwardRef((props, ref) => {
                 url: "https://www.facebook.com/getsmarter237",
               },
               {
-                label: "Website",
+                label: "Site web",
                 url: "https://getsmarter-group.com/",
               },
              
@@ -171,7 +171,7 @@ const AboutSection = forwardRef((props, ref) => {
             src="/images/aboutSection.jpg"
             width={500}
             height={500}
-            alt="About Image"
+            alt="Photo à propos"
             className="object-cover w-full h-full"
           />
         </motion.div>
@@ -182,19 +182,19 @@ const AboutSection = forwardRef((props, ref) => {
           transition={{ duration: 0.9, delay: 0.3 }}
           className="z-10"
         >
-          <h2 className="text-4xl font-bold text-white mb-4">About Me</h2>
+          <h2 className="text-4xl font-bold text-white mb-4">À Propos de Moi</h2>
 
           <p className="text-base lg:text-lg mb-4 leading-relaxed">
-            Passionate about technology from a very young age, I am{" "}
+            Passionné de technologie depuis mon plus jeune âge, je suis{" "}
             <span className="text-transparent text-2xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-bold">
               David René METOMO
             </span>
-            , a full-stack developer and cybersecurity professional driven by
-            the desire to build innovative, high-performance, and secure digital
-            solutions. With solid expertise in{" "}
-            <strong>web and mobile development</strong>, I’ve had the
-            opportunity to work on a variety of projects — from simple showcase
-            websites to complex applications...
+            , développeur full-stack et professionnel de la cybersécurité, motivé par
+            l'envie de construire des solutions numériques innovantes, performantes et sécurisées.
+            Avec une solide expertise en{" "}
+            <strong>développement web et mobile</strong>, j'ai eu
+            l'opportunité de travailler sur une variété de projets — des sites vitrines simples
+            aux applications complexes...
           </p>
 
           <motion.button
@@ -203,7 +203,7 @@ const AboutSection = forwardRef((props, ref) => {
             whileTap={{ scale: 0.95 }}
             className="relative group text-sm font-bold text-blue-400 hover:text-white transition"
           >
-            <span>Read more</span>
+            <span>Lire la suite</span>
             <span className="absolute bottom-0 right-0 h-[3px] w-0 bg-gradient-to-l from-pink-500 via-purple-500 to-blue-500 origin-right transition-all duration-500 group-hover:w-full"></span>
           </motion.button>
 

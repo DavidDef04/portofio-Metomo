@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
-import projectData from "@/data/projects";
+import fs from "fs";
+import path from "path";
 import { google } from "googleapis";
 
 const SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"];
 const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID || "494630808";
 
+/** Début de pratique professionnelle / formation — vérité déclarée */
+const CAREER_START = new Date("2023-01-01");
+
 function calculateExperience(startDate, endDate = new Date()) {
   if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
-    throw new Error("Date de début invalide");
+    return 0;
   }
 
   let years = endDate.getFullYear() - startDate.getFullYear();
   let months = endDate.getMonth() - startDate.getMonth();
-  let days = endDate.getDate() - startDate.getDate();
+  const days = endDate.getDate() - startDate.getDate();
 
   if (days < 0) months -= 1;
   if (months < 0) {
@@ -20,18 +24,39 @@ function calculateExperience(startDate, endDate = new Date()) {
     months += 12;
   }
 
-  return parseFloat((years + months / 12).toFixed(2));
+  return parseFloat((years + months / 12).toFixed(1));
+}
+
+function loadGaCredentials() {
+  const rawJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+  if (rawJson) return JSON.parse(rawJson);
+
+  const filePath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (filePath) {
+    const resolved = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(process.cwd(), filePath);
+    return JSON.parse(fs.readFileSync(resolved, "utf-8"));
+  }
+
+  return null;
 }
 
 async function fetchTotalUsersGA4() {
-  const rawJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
-
-  if (!rawJson) {
-    console.error("Clé JSON manquante dans les variables d’environnement.");
+  let credentials;
+  try {
+    credentials = loadGaCredentials();
+  } catch {
+    console.error("Impossible de lire les identifiants Google Analytics.");
     return 0;
   }
 
-  const credentials = JSON.parse(rawJson);
+  if (!credentials) {
+    console.error(
+      "GA4 : définir GOOGLE_APPLICATION_CREDENTIALS_JSON ou GOOGLE_APPLICATION_CREDENTIALS"
+    );
+    return 0;
+  }
 
   const auth = new google.auth.GoogleAuth({
     credentials,
@@ -52,7 +77,10 @@ async function fetchTotalUsersGA4() {
       },
     });
 
-    const totalUsers = parseInt(response.data.rows?.[0]?.metricValues?.[0]?.value || "0", 10);
+    const totalUsers = parseInt(
+      response.data.rows?.[0]?.metricValues?.[0]?.value || "0",
+      10
+    );
     return Number.isFinite(totalUsers) ? totalUsers : 0;
   } catch (error) {
     console.error("Erreur GA4:", error);
@@ -62,15 +90,13 @@ async function fetchTotalUsersGA4() {
 
 export async function GET() {
   try {
-    const projectCount = projectData.filter((p) => p.tag.includes("All")).length;
     const visitorCount = await fetchTotalUsersGA4();
-
-    const finFormation = new Date("2024-10-10");
-    const experience = calculateExperience(finFormation);
+    const experienceYears = calculateExperience(CAREER_START);
 
     return NextResponse.json({
       visitors: visitorCount,
-      experience: experience < 1 ? 1 : experience,
+      experience: experienceYears,
+      experienceSince: "2023",
     });
   } catch (error) {
     console.error("Erreur API /api/stats :", error);
