@@ -5,6 +5,7 @@ import {
   saveManualProjects,
   newId,
 } from "@/lib/cms-store";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 
 export async function GET() {
   try {
@@ -42,6 +43,7 @@ export async function POST(req) {
     };
     projects.push(item);
     await saveManualProjects(projects);
+    revalidatePublicPages();
     return NextResponse.json({ success: true, project: item });
   } catch (error) {
     return NextResponse.json(

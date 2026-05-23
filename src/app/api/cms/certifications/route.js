@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/cms-auth";
 import { getCertifications, saveCertifications, newId } from "@/lib/cms-store";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 
 export async function GET() {
   try {
@@ -32,6 +33,7 @@ export async function POST(req) {
     };
     list.push(item);
     await saveCertifications(list);
+    revalidatePublicPages();
     return NextResponse.json({ success: true, certification: item });
   } catch (error) {
     return NextResponse.json(

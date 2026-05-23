@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/cms-auth";
 import { getGithubMeta, saveGithubMeta } from "@/lib/cms-store";
 import { getCachedGithubProjects } from "@/lib/github-cache";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 
 export async function GET() {
   try {
@@ -45,6 +46,7 @@ export async function PUT(req) {
     };
     await saveGithubMeta(meta);
     revalidateTag("github-projects");
+    revalidatePublicPages();
     return NextResponse.json({ success: true, meta: meta[key] });
   } catch (error) {
     return NextResponse.json(

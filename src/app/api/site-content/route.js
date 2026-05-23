@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPublicSiteContent } from "@/lib/site-content";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const content = await getPublicSiteContent();

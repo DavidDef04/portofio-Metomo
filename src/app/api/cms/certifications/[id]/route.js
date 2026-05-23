@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/cms-auth";
 import { getCertifications, saveCertifications } from "@/lib/cms-store";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 
 export async function PUT(req, { params }) {
   try {
@@ -14,6 +15,7 @@ export async function PUT(req, { params }) {
     }
     list[index] = { ...list[index], ...body, id };
     await saveCertifications(list);
+    revalidatePublicPages();
     return NextResponse.json({ success: true, certification: list[index] });
   } catch (error) {
     return NextResponse.json(
@@ -33,6 +35,7 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "Introuvable" }, { status: 404 });
     }
     await saveCertifications(filtered);
+    revalidatePublicPages();
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

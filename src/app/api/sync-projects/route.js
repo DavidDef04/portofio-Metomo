@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { getCachedGithubProjects } from "@/lib/github-cache";
+import { revalidatePublicPages } from "@/lib/revalidate-public";
 
 export async function GET() {
   try {
@@ -16,5 +17,6 @@ export async function GET() {
 
 export async function POST() {
   revalidateTag("github-projects");
+  revalidatePublicPages();
   return GET();
 }

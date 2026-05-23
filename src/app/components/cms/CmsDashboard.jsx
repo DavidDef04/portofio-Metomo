@@ -2,6 +2,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+async function parseCmsResponse(res) {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || `Erreur serveur (${res.status})`);
+  }
+  return data;
+}
+
 const CATEGORIES = ["Web", "Mobile", "Cybersécurité", "IA"];
 const inputClass =
   "w-full px-3 py-2 bg-elevated border border-border text-bone text-sm focus:outline-none focus:border-champagne/50";
@@ -48,19 +56,31 @@ export default function CmsDashboard() {
   const [certForm, setCertForm] = useState(emptyCert);
   const [editingId, setEditingId] = useState(null);
   const [editingCertId, setEditingCertId] = useState(null);
-  const [msg, setMsg] = useState("");
+  const [toast, setToast] = useState(null);
+  const [saving, setSaving] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  const showToast = useCallback((type, text) => {
+    setToast({ type, text });
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
   const [heroForm, setHeroForm] = useState(null);
   const [experiences, setExperiences] = useState([]);
   const [expForm, setExpForm] = useState(emptyExperience);
   const [editingExpId, setEditingExpId] = useState(null);
 
   const load = useCallback(async () => {
+    const opts = { cache: "no-store" };
     const [m, g, c, s] = await Promise.all([
-      fetch("/api/cms/manual-projects").then((r) => r.json()),
-      fetch("/api/cms/github-meta").then((r) => r.json()),
-      fetch("/api/cms/certifications").then((r) => r.json()),
-      fetch("/api/cms/site-content").then((r) => r.json()),
+      fetch("/api/cms/manual-projects", opts).then((r) => r.json()),
+      fetch("/api/cms/github-meta", opts).then((r) => r.json()),
+      fetch("/api/cms/certifications", opts).then((r) => r.json()),
+      fetch("/api/cms/site-content", opts).then((r) => r.json()),
     ]);
     if (m.success) setManual(m.projects);
     if (g.success) setGithub(g.projects);
@@ -86,33 +106,51 @@ export default function CmsDashboard() {
 
   const saveProject = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...form,
-      technologies: form.technologies
-        ? form.technologies.split(",").map((t) => t.trim()).filter(Boolean)
-        : [],
-    };
-    const url = editingId
-      ? `/api/cms/manual-projects/${editingId}`
-      : "/api/cms/manual-projects";
-    const res = await fetch(url, {
-      method: editingId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMsg(editingId ? "Projet mis à jour" : "Projet créé");
+    setSaving("project");
+    try {
+      const payload = {
+        ...form,
+        technologies: form.technologies
+          ? form.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+          : [],
+      };
+      const url = editingId
+        ? `/api/cms/manual-projects/${editingId}`
+        : "/api/cms/manual-projects";
+      const res = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      await parseCmsResponse(res);
+      showToast("success", editingId ? "Projet mis à jour" : "Projet créé");
       setForm(emptyProject);
       setEditingId(null);
-      load();
-    } else setMsg(data.error || "Erreur");
+      await load();
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const deleteProject = async (id) => {
     if (!confirm("Supprimer ce projet ?")) return;
-    await fetch(`/api/cms/manual-projects/${id}`, { method: "DELETE" });
-    load();
+    setSaving("project");
+    try {
+      const res = await fetch(`/api/cms/manual-projects/${id}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
+      await parseCmsResponse(res);
+      showToast("success", "Projet supprimé");
+      await load();
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const editProject = (p) => {
@@ -124,25 +162,49 @@ export default function CmsDashboard() {
     setTab("manual");
   };
 
-  const uploadFile = async (e, { kind = "image", onPath } = {}) => {
+  const uploadFile = async (
+    e,
+    { kind = "image", previousPath = "", onPath, persistCv = false } = {}
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    setMsg("");
     try {
       const body = new FormData();
       body.append("file", file);
       body.append("kind", kind);
+      if (previousPath) body.append("previousPath", previousPath);
       const res = await fetch("/api/cms/upload", { method: "POST", body });
-      const data = await res.json();
-      if (data.success) {
-        onPath(data.path);
-        setMsg(kind === "cv" ? "CV téléversé" : "Image téléversée");
+      const data = await parseCmsResponse(res);
+      onPath?.(data.path);
+
+      if (kind === "cv" && persistCv) {
+        const saveRes = await fetch("/api/cms/site-content", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ hero: { cvUrl: data.path } }),
+          cache: "no-store",
+        });
+        await parseCmsResponse(saveRes);
+        setHeroForm((prev) => (prev ? { ...prev, cvUrl: data.path } : prev));
+        showToast(
+          "success",
+          "Nouveau CV enregistré — l’ancien fichier a été remplacé sur le site."
+        );
       } else {
-        setMsg(data.error || "Échec du téléversement");
+        showToast(
+          "success",
+          data.replaced
+            ? kind === "cv"
+              ? "CV remplacé"
+              : "Image remplacée (ancienne supprimée)"
+            : kind === "cv"
+              ? "CV téléversé"
+              : "Image téléversée"
+        );
       }
-    } catch {
-      setMsg("Erreur réseau lors du téléversement");
+    } catch (err) {
+      showToast("error", err.message || "Erreur réseau lors du téléversement");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -151,32 +213,45 @@ export default function CmsDashboard() {
 
   const uploadImage = (e) =>
     uploadFile(e, {
+      previousPath: form.image || "",
       onPath: (path) => setForm((prev) => ({ ...prev, image: path })),
     });
 
   const saveHero = async (e) => {
     e.preventDefault();
     if (!heroForm) return;
-    const { rolesText, ...rest } = heroForm;
-    const payload = {
-      hero: {
-        ...rest,
-        roles: rolesText
-          .split("\n")
-          .map((r) => r.trim())
-          .filter(Boolean),
-      },
-    };
-    const res = await fetch("/api/cms/site-content", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMsg("Section hero enregistrée");
-      load();
-    } else setMsg(data.error || "Erreur");
+    setSaving("hero");
+    try {
+      const { rolesText, roles: _roles, ...heroFields } = heroForm;
+      const res = await fetch("/api/cms/site-content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hero: {
+            ...heroFields,
+            roles: (rolesText || "")
+              .split("\n")
+              .map((r) => r.trim())
+              .filter(Boolean),
+          },
+        }),
+        cache: "no-store",
+      });
+      const data = await parseCmsResponse(res);
+      const h = data.content.hero;
+      setHeroForm({
+        ...h,
+        rolesText: (h.roles || []).join("\n"),
+      });
+      showToast(
+        "success",
+        "Hero enregistré. Ouvrez l’accueil (ou revenez sur l’onglet) pour voir les changements."
+      );
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const saveExperiences = async (list) => {
@@ -184,87 +259,125 @@ export default function CmsDashboard() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ experiences: list }),
+      cache: "no-store",
     });
-    const data = await res.json();
-    if (data.success) {
-      setExperiences(data.content.experiences);
-      return true;
-    }
-    setMsg(data.error || "Erreur");
-    return false;
+    const data = await parseCmsResponse(res);
+    setExperiences(data.content.experiences);
+    return true;
   };
 
   const saveExperience = async (e) => {
     e.preventDefault();
-    const item = {
-      ...expForm,
-      technologies: expForm.technologies
-        ? expForm.technologies.split(",").map((t) => t.trim()).filter(Boolean)
-        : [],
-      order: Number(expForm.order) || 100,
-    };
-    let next;
-    if (editingExpId) {
-      next = experiences.map((x) =>
-        x.id === editingExpId ? { ...x, ...item, id: editingExpId } : x
+    setSaving("experience");
+    try {
+      const item = {
+        ...expForm,
+        technologies: expForm.technologies
+          ? expForm.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+          : [],
+        order: Number(expForm.order) || 100,
+      };
+      let next;
+      if (editingExpId) {
+        next = experiences.map((x) =>
+          x.id === editingExpId ? { ...x, ...item, id: editingExpId } : x
+        );
+      } else {
+        next = [...experiences, { ...item, id: `exp-${Date.now()}` }];
+      }
+      await saveExperiences(next);
+      showToast(
+        "success",
+        editingExpId ? "Expérience mise à jour" : "Expérience ajoutée"
       );
-    } else {
-      next = [
-        ...experiences,
-        { ...item, id: `exp-${Date.now()}` },
-      ];
-    }
-    if (await saveExperiences(next)) {
-      setMsg(editingExpId ? "Expérience mise à jour" : "Expérience ajoutée");
       setExpForm(emptyExperience);
       setEditingExpId(null);
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
     }
   };
 
   const deleteExperience = async (id) => {
     if (!confirm("Supprimer cette expérience ?")) return;
-    await saveExperiences(experiences.filter((x) => x.id !== id));
-    setMsg("Expérience supprimée");
+    setSaving("experience");
+    try {
+      await saveExperiences(experiences.filter((x) => x.id !== id));
+      showToast("success", "Expérience supprimée");
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
   };
 
   const toggleGithub = async (p, field, value) => {
-    await fetch("/api/cms/github-meta", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: p.id,
-        githubId: p.githubId,
-        visible: field === "visible" ? value : p.visible !== false,
-        featured: field === "featured" ? value : p.featured === true,
-        order: p.order ?? 500,
-      }),
-    });
-    load();
+    try {
+      const res = await fetch("/api/cms/github-meta", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: p.id,
+          githubId: p.githubId,
+          visible: field === "visible" ? value : p.visible !== false,
+          featured: field === "featured" ? value : p.featured === true,
+          order: p.order ?? 500,
+        }),
+        cache: "no-store",
+      });
+      await parseCmsResponse(res);
+      showToast("success", "Projet GitHub mis à jour");
+      await load();
+    } catch (err) {
+      showToast("error", err.message);
+    }
   };
 
   const saveCert = async (e) => {
     e.preventDefault();
-    const url = editingCertId
-      ? `/api/cms/certifications/${editingCertId}`
-      : "/api/cms/certifications";
-    const res = await fetch(url, {
-      method: editingCertId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(certForm),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMsg(editingCertId ? "Certification mise à jour" : "Certification ajoutée");
+    setSaving("cert");
+    try {
+      const url = editingCertId
+        ? `/api/cms/certifications/${editingCertId}`
+        : "/api/cms/certifications";
+      const res = await fetch(url, {
+        method: editingCertId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(certForm),
+        cache: "no-store",
+      });
+      await parseCmsResponse(res);
+      showToast(
+        "success",
+        editingCertId ? "Certification mise à jour" : "Certification ajoutée"
+      );
       setCertForm(emptyCert);
       setEditingCertId(null);
-      load();
+      await load();
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
     }
   };
 
   const deleteCert = async (id) => {
     if (!confirm("Supprimer ?")) return;
-    await fetch(`/api/cms/certifications/${id}`, { method: "DELETE" });
-    load();
+    setSaving("cert");
+    try {
+      const res = await fetch(`/api/cms/certifications/${id}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
+      await parseCmsResponse(res);
+      showToast("success", "Certification supprimée");
+      await load();
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
   };
 
   return (
@@ -303,11 +416,30 @@ export default function CmsDashboard() {
         </a>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto max-h-screen">
-        {msg && (
-          <p className="mb-4 text-sm text-teal" onAnimationEnd={() => setMsg("")}>
-            {msg}
-          </p>
+      <main className="flex-1 p-8 overflow-y-auto max-h-screen relative">
+        {toast && (
+          <div
+            role="status"
+            className={`fixed top-4 right-4 z-50 max-w-md px-4 py-3 border text-sm shadow-lg ${
+              toast.type === "success"
+                ? "bg-teal/15 border-teal text-teal"
+                : "bg-ember/15 border-ember text-ember"
+            }`}
+            style={{ borderRadius: "var(--radius-cut)" }}
+          >
+            <p className="font-medium">{toast.type === "success" ? "✓ Succès" : "✕ Erreur"}</p>
+            <p className="mt-1 text-bone-dim">{toast.text}</p>
+            {toast.type === "success" && (
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-champagne hover:underline text-xs"
+              >
+                Voir sur le site →
+              </a>
+            )}
+          </div>
         )}
 
         {tab === "hero" && heroForm && (
@@ -392,8 +524,10 @@ export default function CmsDashboard() {
                     onChange={(e) =>
                       uploadFile(e, {
                         kind: "cv",
+                        previousPath: heroForm.cvUrl || "",
+                        persistCv: true,
                         onPath: (path) =>
-                          setHeroForm({ ...heroForm, cvUrl: path }),
+                          setHeroForm((prev) => ({ ...prev, cvUrl: path })),
                       })
                     }
                   />
@@ -401,7 +535,7 @@ export default function CmsDashboard() {
               </div>
               <input
                 className={inputClass}
-                placeholder="/CV_David_Metomo.pdf"
+                placeholder="/cv/David_Rene_Metomo_CV.pdf"
                 value={heroForm.cvUrl}
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, cvUrl: e.target.value })
@@ -479,8 +613,12 @@ export default function CmsDashboard() {
               WhatsApp utilise le numéro dans <code>.env</code> (CONTACT_PHONE).
             </p>
 
-            <button type="submit" className="btn-premium btn-premium--primary">
-              Enregistrer le hero
+            <button
+              type="submit"
+              disabled={saving === "hero"}
+              className="btn-premium btn-premium--primary disabled:opacity-50"
+            >
+              {saving === "hero" ? "Enregistrement…" : "Enregistrer le hero"}
             </button>
           </form>
         )}
@@ -545,8 +683,16 @@ export default function CmsDashboard() {
                 Visible sur le site
               </label>
               <div className="flex gap-2">
-                <button type="submit" className="btn-premium btn-premium--primary">
-                  {editingExpId ? "Enregistrer" : "Ajouter"}
+                <button
+                  type="submit"
+                  disabled={saving === "experience"}
+                  className="btn-premium btn-premium--primary disabled:opacity-50"
+                >
+                  {saving === "experience"
+                    ? "Enregistrement…"
+                    : editingExpId
+                      ? "Enregistrer"
+                      : "Ajouter"}
                 </button>
                 {editingExpId && (
                   <button
@@ -720,8 +866,16 @@ export default function CmsDashboard() {
                 </label>
               </div>
               <div className="flex gap-2">
-                <button type="submit" className="btn-premium btn-premium--primary">
-                  {editingId ? "Enregistrer" : "Créer"}
+                <button
+                  type="submit"
+                  disabled={saving === "project"}
+                  className="btn-premium btn-premium--primary disabled:opacity-50"
+                >
+                  {saving === "project"
+                    ? "Enregistrement…"
+                    : editingId
+                      ? "Enregistrer"
+                      : "Créer"}
                 </button>
                 {editingId && (
                   <button
@@ -794,12 +948,24 @@ export default function CmsDashboard() {
               type="button"
               className="btn-premium btn-premium--ghost mb-6"
               onClick={async () => {
-                await fetch("/api/sync-projects", { method: "POST" });
-                load();
-                setMsg("Liste GitHub rafraîchie");
+                setSaving("github-sync");
+                try {
+                  const res = await fetch("/api/sync-projects", {
+                    method: "POST",
+                    cache: "no-store",
+                  });
+                  await parseCmsResponse(res);
+                  showToast("success", "Liste GitHub rafraîchie");
+                  await load();
+                } catch (err) {
+                  showToast("error", err.message);
+                } finally {
+                  setSaving(null);
+                }
               }}
+              disabled={saving === "github-sync"}
             >
-              Rafraîchir depuis GitHub
+              {saving === "github-sync" ? "Synchronisation…" : "Rafraîchir depuis GitHub"}
             </button>
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {github.map((p) => (
@@ -878,8 +1044,16 @@ export default function CmsDashboard() {
                 />
                 Visible sur le site
               </label>
-              <button type="submit" className="btn-premium btn-premium--primary">
-                {editingCertId ? "Enregistrer" : "Ajouter"}
+              <button
+                type="submit"
+                disabled={saving === "cert"}
+                className="btn-premium btn-premium--primary disabled:opacity-50"
+              >
+                {saving === "cert"
+                  ? "Enregistrement…"
+                  : editingCertId
+                    ? "Enregistrer"
+                    : "Ajouter"}
               </button>
             </form>
 

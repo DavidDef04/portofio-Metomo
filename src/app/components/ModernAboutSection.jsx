@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, useCallback, forwardRef } from "react";
+import { useRefetchOnFocus } from "@/lib/useRefetchOnFocus";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "./ui/SectionHeader";
 import AmbientBackground from "./ui/AmbientBackground";
@@ -22,15 +23,15 @@ const ModernAboutSection = forwardRef((props, ref) => {
     { id: "certifications", label: "Certifications" },
   ];
 
-  useEffect(() => {
-    fetch("/api/certifications")
+  const loadAboutContent = useCallback(() => {
+    fetch("/api/certifications", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setCertifications(d.certifications);
       })
       .catch(() => {});
 
-    fetch("/api/site-content")
+    fetch("/api/site-content", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) return;
@@ -40,6 +41,8 @@ const ModernAboutSection = forwardRef((props, ref) => {
       })
       .catch(() => {});
   }, []);
+
+  useRefetchOnFocus(loadAboutContent);
 
   const skills = {
     development: [

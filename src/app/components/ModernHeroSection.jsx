@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useRefetchOnFocus } from "@/lib/useRefetchOnFocus";
 import Image from "next/image";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { FaWhatsapp, FaGithub, FaLinkedin, FaEnvelope } from "react-icons/fa";
@@ -31,14 +32,16 @@ const ModernHeroSection = () => {
 
   const roles = hero.roles?.length ? hero.roles : DEFAULT_SITE_CONTENT.hero.roles;
 
-  useEffect(() => {
-    fetch("/api/site-content")
+  const loadHero = useCallback(() => {
+    fetch("/api/site-content", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d.success && d.hero) setHero(d.hero);
       })
       .catch(() => {});
   }, []);
+
+  useRefetchOnFocus(loadHero);
 
   useEffect(() => {
     const t = setInterval(

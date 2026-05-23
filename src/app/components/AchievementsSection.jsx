@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import projectData from "@/data/projects";
 import SectionHeader from "./ui/SectionHeader";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
@@ -35,9 +34,7 @@ const AchievementsSection = () => {
 
         const projectCount = projectsData.success
           ? projectsData.count ?? projectsData.projects?.length ?? 0
-          : Array.isArray(projectData)
-            ? projectData.length
-            : 0;
+          : 0;
 
         setStats({
           projects: projectCount,
@@ -46,8 +43,7 @@ const AchievementsSection = () => {
           experienceSince: statsData.experienceSince ?? "2023",
         });
       } catch {
-        const staticCount = Array.isArray(projectData) ? projectData.length : 0;
-        setStats((s) => ({ ...s, projects: staticCount }));
+        setStats((s) => ({ ...s, projects: 0 }));
       } finally {
         setIsLoading(false);
       }

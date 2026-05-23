@@ -3,6 +3,13 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { requireAdmin } from "@/lib/cms-auth";
+import {
+  CV_STABLE_PATH,
+  CV_DIR,
+  cleanupOrphanCvFiles,
+  deletePublicAssetIfManaged,
+  publicUrlToAbsolute,
+} from "@/lib/cms-files";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -23,7 +30,6 @@ const EXT_BY_TYPE = {
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_CV_BYTES = 10 * 1024 * 1024;
 const IMAGE_DIR = path.join(process.cwd(), "public", "images", "projects");
-const PUBLIC_DIR = path.join(process.cwd(), "public");
 
 export async function POST(req) {
   try {
@@ -31,6 +37,10 @@ export async function POST(req) {
     const formData = await req.formData();
     const file = formData.get("file");
     const kind = formData.get("kind") === "cv" ? "cv" : "image";
+    const previousPath =
+      typeof formData.get("previousPath") === "string"
+        ? formData.get("previousPath").trim()
+        : "";
 
     if (!file || typeof file === "string") {
       return NextResponse.json(
@@ -52,10 +62,22 @@ export async function POST(req) {
           { status: 400 }
         );
       }
-      const name = `CV_${Date.now()}.pdf`;
+
+      if (previousPath && previousPath !== CV_STABLE_PATH) {
+        await deletePublicAssetIfManaged(previousPath);
+      }
+
+      await mkdir(CV_DIR, { recursive: true });
       const buffer = Buffer.from(await file.arrayBuffer());
-      await writeFile(path.join(PUBLIC_DIR, name), buffer);
-      return NextResponse.json({ success: true, path: `/${name}` });
+      const absPath = publicUrlToAbsolute(CV_STABLE_PATH);
+      await writeFile(absPath, buffer);
+      await cleanupOrphanCvFiles();
+
+      return NextResponse.json({
+        success: true,
+        path: CV_STABLE_PATH,
+        replaced: true,
+      });
     }
 
     if (!ALLOWED_TYPES.has(file.type)) {
@@ -75,6 +97,10 @@ export async function POST(req) {
       );
     }
 
+    if (previousPath) {
+      await deletePublicAssetIfManaged(previousPath);
+    }
+
     const ext = EXT_BY_TYPE[file.type];
     const name = `cms-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
 
@@ -85,6 +111,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       path: `/images/projects/${name}`,
+      replaced: Boolean(previousPath),
     });
   } catch (error) {
     return NextResponse.json(
