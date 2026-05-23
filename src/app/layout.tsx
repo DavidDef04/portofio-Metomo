@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Syne, Albert_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 import ClientWrapper from "./components/ClientWrapper";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -135,6 +136,7 @@ export default function RootLayout({
       </head>
       <body className="grain antialiased bg-void text-bone-dim">
         <ClientWrapper>{children}</ClientWrapper>
+        <SpeedInsights />
       </body>
     </html>
   );
