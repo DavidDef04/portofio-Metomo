@@ -15,6 +15,7 @@
     "@google-analytics/data": "^5.1.0",
     "@marsidev/react-turnstile": "^1.5.2",
     "@react-icons/all-files": "^4.1.0",
+    "@vercel/analytics": "^2.0.1",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "botid": "^1.5.11",
