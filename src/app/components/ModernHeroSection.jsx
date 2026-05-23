@@ -1,8 +1,8 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRefetchOnFocus } from "@/lib/useRefetchOnFocus";
 import Image from "next/image";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaWhatsapp, FaGithub, FaLinkedin, FaEnvelope } from "react-icons/fa";
 import { ease, fadeUp, staggerContainer } from "@/lib/motion";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
@@ -22,13 +22,6 @@ const socialLinkMotion = {
 const ModernHeroSection = () => {
   const [hero, setHero] = useState(DEFAULT_SITE_CONTENT.hero);
   const [roleIndex, setRoleIndex] = useState(0);
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   const roles = hero.roles?.length ? hero.roles : DEFAULT_SITE_CONTENT.hero.roles;
 
@@ -88,23 +81,19 @@ const ModernHeroSection = () => {
   return (
     <section
       id="home"
-      ref={ref}
-      className="relative min-h-[100svh] flex items-center overflow-hidden"
+      className="relative min-h-[100svh] flex items-center"
     >
       <AmbientBackground />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-      <motion.div
-        style={{ y, opacity }}
-        className="relative z-10 w-full max-w-[calc(72rem+4rem)] mx-auto px-[var(--space-gutter)] pt-8 pb-24"
-      >
+      <motion.div className="relative z-10 w-full max-w-[calc(72rem+4rem)] mx-auto px-[var(--space-gutter)] pt-8 pb-24 md:pb-32">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
           className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center"
         >
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 relative z-10">
             <motion.p className="label-mono mb-6" variants={fadeUp} custom={0}>
               {hero.eyebrow}
             </motion.p>
@@ -219,7 +208,7 @@ const ModernHeroSection = () => {
                   sizes="(max-width: 1024px) 90vw, 45vw"
                   className="object-cover object-top grayscale-[20%] contrast-[1.05]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-void via-void/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-elevated/90 via-transparent to-transparent pointer-events-none" />
               </div>
               <motion.div
                 className="absolute -bottom-6 -left-4 md:-left-8 surface-card px-5 py-4 max-w-[220px]"

@@ -1,0 +1,214 @@
+# Configuration Vercel — portfolio David METOMO
+
+Guide pas à pas après le déploiement sur [Vercel](https://vercel.com).
+
+**Symptômes courants en production (sans config complète) :**
+
+| Symptôme | Cause probable |
+|----------|----------------|
+| Projets privés GitHub absents | `GITHUB_TOKEN` manquant ou sans scope `repo` |
+| Visiteurs = **0** | Identifiants Google Analytics 4 non configurés |
+| Projets / années OK | Ces valeurs ne dépendent pas de GA4 ; les dépôts **publics** GitHub fonctionnent sans token |
+
+---
+
+## Étape 1 — Ouvrir les variables d'environnement
+
+1. Allez sur [vercel.com/dashboard](https://vercel.com/dashboard)
+2. Cliquez sur le projet **portofio-Metomo** (ou le nom de votre déploiement)
+3. Menu **Settings** → **Environment Variables**
+4. Pour chaque variable ci-dessous :
+   - **Key** = nom de la variable
+   - **Value** = valeur (voir sections détaillées)
+   - Cochez **Production** (et **Preview** si vous testez les PR)
+5. Cliquez **Save**
+
+> Après toute modification de variable : **Deployments** → dernier déploiement → **⋯** → **Redeploy** (obligatoire pour appliquer les changements).
+
+---
+
+## Étape 2 — GitHub (projets privés + sync)
+
+Sans token, l’API GitHub ne renvoie que les dépôts **publics**. Les dépôts privés restent invisibles en production.
+
+### 2.1 Créer un Personal Access Token
+
+1. GitHub → **Settings** (votre compte) → **Developer settings** → **Personal access tokens**
+2. **Fine-grained token** (recommandé) ou **Classic**
+3. Permissions minimales :
+   - **Repository access** : *All repositories* (ou sélectionnez les dépôts concernés)
+   - **Repository permissions** → **Contents** : Read-only  
+   - **Metadata** : Read-only (souvent automatique)
+   - Pour les dépôts privés : scope **`repo`** (classic) ou accès lecture aux repos privés (fine-grained)
+4. Copiez le token (`ghp_...` ou `github_pat_...`) — il ne s’affiche qu’une fois
+
+### 2.2 Variables à ajouter sur Vercel
+
+| Variable | Exemple | Obligatoire |
+|----------|---------|-------------|
+| `GITHUB_TOKEN` | `ghp_xxxxxxxx` | **Oui** pour les privés |
+| `GITHUB_USERNAMES` | `DavidDef04,alcdigitaldeveloppeur01-arch,alcdigitaldeveloppeur01` | Recommandé |
+| `GITHUB_ORGS` | `ALC-Digital` | Si dépôts sous une org |
+| `GITHUB_INCLUDE_FORKS` | `false` | Optionnel |
+| `GITHUB_FILTER_STRICT` | `false` | `false` = tous les repos accessibles au token |
+
+Référence locale : fichier `.env.example` à la racine du projet.
+
+### 2.3 Vérifier après redéploiement
+
+1. Ouvrez `https://VOTRE-DOMAINE/api/projects` dans le navigateur  
+   → JSON avec `"success": true` et la liste des projets (privés sans `githubUrl`).
+2. Connectez-vous au CMS : `https://VOTRE-DOMAINE/login`  
+   → onglet GitHub → **Diagnostic sync** (route `/api/cms/github-sync-debug`)  
+   → vérifiez `hasToken: true` et `privateCount > 0`.
+
+---
+
+## Étape 3 — Google Analytics 4 (compteur visiteurs)
+
+La section **« Sessions qualifiées »** appelle `/api/stats`, qui interroge l’API **Google Analytics Data**.  
+Sans identifiants, l’API renvoie **`visitors: 0`** (comportement normal).  
+Les **projets** et **années de pratique** viennent d’ailleurs — d’où l’écart que vous observez.
+
+### 3.1 Prérequis GA4
+
+1. Propriété GA4 créée pour le site ([Google Analytics](https://analytics.google.com))
+2. ID de propriété numérique (ex. `494630808`) — **Admin** → **Property settings** → **Property ID**
+3. Compte de service Google Cloud avec accès **Lecteur** à cette propriété
+
+### 3.2 Créer le compte de service
+
+1. [Google Cloud Console](https://console.cloud.google.com) → projet (ou nouveau projet)
+2. **APIs & Services** → **Library** → activer **Google Analytics Data API**
+3. **IAM & Admin** → **Service Accounts** → **Create**
+4. Créez une clé **JSON** et téléchargez le fichier
+
+### 3.3 Donner accès au compte de service dans GA4
+
+1. Google Analytics → **Admin** → **Property access management**
+2. **+** → ajoutez l’e-mail du compte de service (`xxx@xxx.iam.gserviceaccount.com`)
+3. Rôle : **Viewer** (Lecteur)
+
+### 3.4 Variables Vercel pour GA4
+
+**Option A — recommandée sur Vercel (JSON en une ligne)**
+
+| Variable | Valeur |
+|----------|--------|
+| `GA4_PROPERTY_ID` | `494630808` (votre ID) |
+| `GOOGLE_APPLICATION_CREDENTIALS_JSON` | Contenu **complet** du fichier JSON, collé sur **une seule ligne** |
+
+Pour obtenir la ligne JSON :
+```powershell
+# PowerShell (Windows)
+(Get-Content "chemin\vers\ga4-service-account.json" -Raw) -replace "`r`n", "" -replace "`n", ""
+```
+Copiez le résultat dans la valeur de `GOOGLE_APPLICATION_CREDENTIALS_JSON`.
+
+**Option B — fichier (moins pratique sur Vercel)**
+
+Variable `GOOGLE_APPLICATION_CREDENTIALS` = chemin relatif vers un fichier — **non recommandé** en serverless (le fichier n’est pas déployé par défaut). Préférez l’option A.
+
+### 3.5 Vérifier
+
+1. Redéployez
+2. Ouvrez `https://VOTRE-DOMAINE/api/stats`  
+   → `"visitors"` doit être > 0 (si le site a déjà du trafic GA4)
+3. Rechargez la page d’accueil → section **Impact mesurable**
+
+---
+
+## Étape 4 — CMS admin (dashboard)
+
+| Variable | Description |
+|----------|-------------|
+| `ADMIN_USERNAME` | Identifiant de connexion `/login` |
+| `ADMIN_PASSWORD` | Mot de passe (utilisez un mot de passe fort en production) |
+| `CMS_AUTH_SECRET` | Chaîne aléatoire ≥ 32 caractères (signature des cookies) |
+
+URL : `https://VOTRE-DOMAINE/login` → redirection vers `/dashboard`.
+
+---
+
+## Étape 5 — Formulaire de contact
+
+| Variable | Description |
+|----------|-------------|
+| `GMAIL_USER` | Adresse Gmail |
+| `GMAIL_APP_PASS` | [Mot de passe d’application Google](https://myaccount.google.com/apppasswords) |
+| `FROM_EMAIL` | Expéditeur (souvent = `GMAIL_USER`) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Clé site Cloudflare Turnstile |
+| `TURNSTILE_SECRET_KEY` | Clé secrète Turnstile |
+
+Création Turnstile : [Cloudflare Dashboard → Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile).
+
+---
+
+## Étape 6 — URL du site (SEO & liens)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SITE_URL` | URL canonique, ex. `https://david-metomo.dev` |
+
+---
+
+## Étape 7 — Webhook GitHub (optionnel, sync auto)
+
+Quand vous poussez du code sur GitHub, le portfolio peut invalider le cache des projets.
+
+1. GitHub → repo → **Settings** → **Webhooks** → **Add webhook**
+2. **Payload URL** : `https://VOTRE-DOMAINE/api/github/webhook`
+3. **Content type** : `application/json`
+4. **Secret** : même valeur que `GITHUB_WEBHOOK_SECRET` sur Vercel
+5. Événement : **Just the push event**
+
+---
+
+## Étape 8 — Checklist finale: redéploiement et tests
+
+```
+[ ] Toutes les variables Production enregistrées sur Vercel
+[ ] Redeploy effectué (pas seulement Save)
+[ ] GET /api/projects → projets privés présents (sans lien GitHub public)
+[ ] GET /api/stats → visitors > 0 (après config GA4)
+[ ] /login → dashboard accessible
+[ ] Formulaire contact → envoi test OK
+[ ] Logs Vercel : Deployments → Functions → pas d’erreur "GA4" ou "GitHub"
+```
+
+---
+
+## Limitation importante — CMS et fichiers sur Vercel
+
+Vercel est **serverless** : le disque est **éphémère**.
+
+- ✅ **Lecture** : fichiers versionnés dans Git (`data/cms/*.json`, images dans `public/`) → OK
+- ❌ **Écriture** : uploads CMS, modifications JSON via le dashboard **ne persistent pas** après redémarrage / redéploiement
+
+**En pratique :**
+
+1. Configurez le contenu en local, puis **committez** `data/cms/` et `public/images/` dans Git
+2. Ou migrez vers un stockage externe (Vercel Blob, S3, base de données) pour une édition 100 % en production
+
+---
+
+## Dépannage rapide
+
+| Problème | Action |
+|----------|--------|
+| Toujours 0 visiteur | Vérifier `GOOGLE_APPLICATION_CREDENTIALS_JSON` (JSON valide, une ligne), accès Viewer GA4, `GA4_PROPERTY_ID` |
+| Privés toujours absents | Vérifier `GITHUB_TOKEN`, scope `repo`, redéployer, tester `/api/cms/github-sync-debug` (connecté admin) |
+| Projets en double / manquants | Vérifier `GITHUB_USERNAMES`, `GITHUB_ORGS`, visibilité dans `data/cms/github-meta.json` |
+| Contact échoue | Logs Vercel → fonction `/api/send` ; vérifier Gmail + Turnstile |
+| Variables ignorées | Redéployer après Save ; vérifier l’environnement **Production** coché |
+
+---
+
+## Référence — liste complète des variables
+
+Voir `.env.example` à la racine du projet.
+
+Variables **prioritaires** pour vos deux problèmes actuels :
+
+1. **`GITHUB_TOKEN`** → projets privés
+2. **`GA4_PROPERTY_ID`** + **`GOOGLE_APPLICATION_CREDENTIALS_JSON`** → visiteurs

@@ -6,8 +6,8 @@ import { google } from "googleapis";
 const SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"];
 const GA4_PROPERTY_ID = process.env.GA4_PROPERTY_ID || "494630808";
 
-/** Début de pratique professionnelle / formation — vérité déclarée */
-const CAREER_START = new Date("2023-01-01");
+/** Début de pratique professionnelle / formation — vérité déclarée (depuis 2024) */
+const CAREER_START = new Date("2024-01-01");
 
 function calculateExperience(startDate, endDate = new Date()) {
   if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
@@ -96,7 +96,7 @@ export async function GET() {
     return NextResponse.json({
       visitors: visitorCount,
       experience: experienceYears,
-      experienceSince: "2023",
+      experienceSince: "2024",
     });
   } catch (error) {
     console.error("Erreur API /api/stats :", error);

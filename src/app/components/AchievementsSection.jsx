@@ -16,7 +16,7 @@ const AchievementsSection = () => {
     projects: 0,
     visitors: 0,
     experience: 0,
-    experienceSince: "2023",
+    experienceSince: "2024",
   });
 
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
@@ -40,7 +40,7 @@ const AchievementsSection = () => {
           projects: projectCount,
           visitors: statsData.visitors ?? 0,
           experience: statsData.experience ?? 0,
-          experienceSince: statsData.experienceSince ?? "2023",
+          experienceSince: statsData.experienceSince ?? "2024",
         });
       } catch {
         setStats((s) => ({ ...s, projects: 0 }));
