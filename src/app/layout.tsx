@@ -2,6 +2,7 @@ import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import { Syne, Albert_Sans, Newsreader } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import ClientWrapper from "./components/ClientWrapper";
 
@@ -137,6 +138,7 @@ export default function RootLayout({
       <body className="grain antialiased bg-void text-bone-dim">
         <ClientWrapper>{children}</ClientWrapper>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
