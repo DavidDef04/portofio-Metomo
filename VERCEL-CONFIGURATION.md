@@ -7,8 +7,7 @@ Guide pas à pas après le déploiement sur [Vercel](https://vercel.com).
 | Symptôme | Cause probable |
 |----------|----------------|
 | Projets privés GitHub absents | `GITHUB_TOKEN` manquant ou sans scope `repo` |
-| Visiteurs = **0** | Identifiants Google Analytics 4 non configurés |
-| Projets / années OK | Ces valeurs ne dépendent pas de GA4 ; les dépôts **publics** GitHub fonctionnent sans token |
+| Projets / années OK | Calculés depuis GitHub + date de début de carrière (2024) |
 
 ---
 
@@ -64,13 +63,15 @@ Référence locale : fichier `.env.example` à la racine du projet.
 
 ---
 
-## Étape 3 — Google Analytics 4 (compteur visiteurs)
+## Étape 3 — Analytics (optionnel)
 
-La section **« Sessions qualifiées »** appelle `/api/stats`, qui interroge l’API **Google Analytics Data**.  
-Sans identifiants, l’API renvoie **`visitors: 0`** (comportement normal).  
-Les **projets** et **années de pratique** viennent d’ailleurs — d’où l’écart que vous observez.
+Le portfolio utilise **Vercel Analytics** (`@vercel/analytics` dans `layout.tsx`) pour le trafic — dashboard Vercel → **Analytics**.
 
-### 3.1 Prérequis GA4
+La section **Impact mesurable** affiche : projets, **étoiles GitHub** (ou stacks techniques), années de pratique — **sans** Google Analytics.
+
+### 3.1 Google Analytics 4 (optionnel — balise gtag dans le layout)
+
+Si vous gardez la balise GA4 dans `layout.tsx` pour vos propres rapports GA :
 
 1. Propriété GA4 créée pour le site ([Google Analytics](https://analytics.google.com))
 2. ID de propriété numérique (ex. `494630808`) — **Admin** → **Property settings** → **Property ID**
@@ -109,14 +110,8 @@ Copiez le résultat dans la valeur de `GOOGLE_APPLICATION_CREDENTIALS_JSON`.
 
 Variable `GOOGLE_APPLICATION_CREDENTIALS` = chemin relatif vers un fichier — **non recommandé** en serverless (le fichier n’est pas déployé par défaut). Préférez l’option A.
 
-### 3.5 Vérifier
-
-1. Redéployez
-2. Ouvrez `https://VOTRE-DOMAINE/api/stats`  
-   → `"visitors"` doit être > 0 (si le site a déjà du trafic GA4)
-3. Rechargez la page d’accueil → section **Impact mesurable**
-
 ---
+
 
 ## Étape 4 — CMS admin (dashboard)
 
@@ -127,6 +122,35 @@ Variable `GOOGLE_APPLICATION_CREDENTIALS` = chemin relatif vers un fichier — *
 | `CMS_AUTH_SECRET` | Chaîne aléatoire ≥ 32 caractères (signature des cookies) |
 
 URL : `https://VOTRE-DOMAINE/login` → redirection vers `/dashboard`.
+
+### 4.1 Connexion OK en local mais « Identifiants incorrects » en production
+
+**Cause :** Vercel **n’utilise pas** `.env`, `.env.local` ni `.env.example`. Ces fichiers restent sur votre machine et ne sont en général **pas** poussés sur GitHub.
+
+**À faire :**
+
+1. Vercel → projet → **Settings** → **Environment Variables**
+2. Ajoutez (copiez les **mêmes valeurs** que votre `.env` local, pas seulement l’exemple) :
+
+| Variable | Exemple | Environnement |
+|----------|---------|---------------|
+| `ADMIN_USERNAME` | `metomo442@gmail.com` | **Production** ✓ |
+| `ADMIN_PASSWORD` | votre mot de passe | **Production** ✓ |
+| `CMS_AUTH_SECRET` | chaîne aléatoire 32+ caractères | **Production** ✓ |
+
+3. **Save**, puis **Deployments** → **Redeploy** (obligatoire)
+4. Sur `/login`, utilisez exactement le même identifiant et mot de passe qu’en local
+
+**Messages d’erreur :**
+
+| Message | Signification |
+|---------|----------------|
+| « CMS non configuré sur le serveur… » | `ADMIN_PASSWORD` absent sur Vercel → ajoutez la variable et redéployez |
+| « Identifiants incorrects » | Variables présentes mais valeur différente de votre `.env` local (faute de frappe, espaces, mauvais environnement Preview vs Production) |
+
+**Mot de passe avec caractères spéciaux** (`@`, `!`, `#`) : collez la valeur telle quelle dans Vercel, sans guillemets supplémentaires.
+
+**Sécurité :** ne commitez jamais `.env` / `.env.local`. Changez le mot de passe si `.env.example` contient un mot de passe réel dans Git.
 
 ---
 
@@ -170,7 +194,7 @@ Quand vous poussez du code sur GitHub, le portfolio peut invalider le cache des 
 [ ] Toutes les variables Production enregistrées sur Vercel
 [ ] Redeploy effectué (pas seulement Save)
 [ ] GET /api/projects → projets privés présents (sans lien GitHub public)
-[ ] GET /api/stats → visitors > 0 (après config GA4)
+[ ] Section Impact → projets, étoiles GitHub (ou stacks), années
 [ ] /login → dashboard accessible
 [ ] Formulaire contact → envoi test OK
 [ ] Logs Vercel : Deployments → Functions → pas d’erreur "GA4" ou "GitHub"
@@ -196,7 +220,7 @@ Vercel est **serverless** : le disque est **éphémère**.
 
 | Problème | Action |
 |----------|--------|
-| Toujours 0 visiteur | Vérifier `GOOGLE_APPLICATION_CREDENTIALS_JSON` (JSON valide, une ligne), accès Viewer GA4, `GA4_PROPERTY_ID` |
+| Stats Impact incorrectes | Vérifier `GITHUB_TOKEN` pour le décompte projets / étoiles |
 | Privés toujours absents | Vérifier `GITHUB_TOKEN`, scope `repo`, redéployer, tester `/api/cms/github-sync-debug` (connecté admin) |
 | Projets en double / manquants | Vérifier `GITHUB_USERNAMES`, `GITHUB_ORGS`, visibilité dans `data/cms/github-meta.json` |
 | Contact échoue | Logs Vercel → fonction `/api/send` ; vérifier Gmail + Turnstile |
@@ -210,5 +234,5 @@ Voir `.env.example` à la racine du projet.
 
 Variables **prioritaires** pour vos deux problèmes actuels :
 
-1. **`GITHUB_TOKEN`** → projets privés
-2. **`GA4_PROPERTY_ID`** + **`GOOGLE_APPLICATION_CREDENTIALS_JSON`** → visiteurs
+1. **`GITHUB_TOKEN`** → projets privés + étoiles GitHub
+2. **`ADMIN_USERNAME`** / **`ADMIN_PASSWORD`** → CMS `/login`

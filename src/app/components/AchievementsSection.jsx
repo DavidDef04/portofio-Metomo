@@ -10,11 +10,28 @@ const AnimatedNumbers = dynamic(() => import("react-animated-numbers"), {
   ssr: false,
 });
 
+function aggregateFromProjects(projects = []) {
+  const stacks = new Set();
+  let githubStars = 0;
+
+  for (const p of projects) {
+    githubStars += Number(p.stars) || 0;
+    if (p.category) stacks.add(String(p.category).trim());
+    for (const t of p.technologies || []) {
+      const name = String(t).trim();
+      if (name) stacks.add(name);
+    }
+  }
+
+  return { githubStars, stackCount: stacks.size };
+}
+
 const AchievementsSection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     projects: 0,
-    visitors: 0,
+    githubStars: 0,
+    stackCount: 0,
     experience: 0,
     experienceSince: "2024",
   });
@@ -31,19 +48,20 @@ const AchievementsSection = () => {
 
         const projectsData = await projectsRes.json();
         const statsData = await statsRes.json();
-
-        const projectCount = projectsData.success
-          ? projectsData.count ?? projectsData.projects?.length ?? 0
-          : 0;
+        const projects = projectsData.success ? projectsData.projects ?? [] : [];
+        const { githubStars, stackCount } = aggregateFromProjects(projects);
 
         setStats({
-          projects: projectCount,
-          visitors: statsData.visitors ?? 0,
+          projects: projectsData.success
+            ? projectsData.count ?? projects.length
+            : 0,
+          githubStars,
+          stackCount,
           experience: statsData.experience ?? 0,
           experienceSince: statsData.experienceSince ?? "2024",
         });
       } catch {
-        setStats((s) => ({ ...s, projects: 0 }));
+        setStats((s) => ({ ...s, projects: 0, githubStars: 0, stackCount: 0 }));
       } finally {
         setIsLoading(false);
       }
@@ -59,11 +77,13 @@ const AchievementsSection = () => {
       detail: "Projets & dépôts actifs",
     },
     {
-      value: stats.visitors,
-      label: "Sessions qualifiées",
-      prefix: "~",
-      suffix: "+",
-      detail: "Audience portfolio",
+      value: stats.githubStars > 0 ? stats.githubStars : stats.stackCount,
+      label: stats.githubStars > 0 ? "Étoiles GitHub" : "Stacks & outils",
+      suffix: stats.githubStars > 0 ? "" : "+",
+      detail:
+        stats.githubStars > 0
+          ? "Reconnaissance sur l'open source"
+          : "Technologies mobilisées en production",
     },
     {
       value: stats.experience,
@@ -80,7 +100,7 @@ const AchievementsSection = () => {
         label="Impact mesurable"
         title="Des chiffres qui"
         titleAccent="parlent de rigueur"
-        description="Projets livrés, visiteurs du portfolio et années de pratique — des indicateurs simples et vérifiables."
+        description="Projets livrés, reconnaissance GitHub et années de pratique — des indicateurs concrets, tirés de votre portfolio."
         align="center"
       />
 
