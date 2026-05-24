@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 
 async function parseCmsResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -46,9 +47,19 @@ const emptyExperience = {
   order: 100,
 };
 
+const NAV_ITEMS = [
+  ["about", "Section Expertise"],
+  ["hero", "Hero (accueil)"],
+  ["parcours", "Parcours pro"],
+  ["manual", "Projets manuels"],
+  ["github", "Projets GitHub"],
+  ["certs", "Certifications"],
+];
+
 export default function CmsDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState("manual");
+  const [tab, setTab] = useState("about");
+  const [navOpen, setNavOpen] = useState(false);
   const [manual, setManual] = useState([]);
   const [github, setGithub] = useState([]);
   const [certs, setCerts] = useState([]);
@@ -70,6 +81,7 @@ export default function CmsDashboard() {
     return () => clearTimeout(t);
   }, [toast]);
   const [heroForm, setHeroForm] = useState(null);
+  const [aboutForm, setAboutForm] = useState(null);
   const [experiences, setExperiences] = useState([]);
   const [expForm, setExpForm] = useState(emptyExperience);
   const [editingExpId, setEditingExpId] = useState(null);
@@ -86,11 +98,12 @@ export default function CmsDashboard() {
     if (g.success) setGithub(g.projects);
     if (c.success) setCerts(c.certifications);
     if (s.success && s.content) {
-      const { hero, experiences: exps } = s.content;
+      const { hero, about, experiences: exps } = s.content;
       setHeroForm({
         ...hero,
         rolesText: (hero.roles || []).join("\n"),
       });
+      setAboutForm(about || DEFAULT_SITE_CONTENT.about);
       setExperiences(exps || []);
     }
   }, []);
@@ -216,6 +229,35 @@ export default function CmsDashboard() {
       previousPath: form.image || "",
       onPath: (path) => setForm((prev) => ({ ...prev, image: path })),
     });
+
+  const selectTab = (id) => {
+    setTab(id);
+    setNavOpen(false);
+  };
+
+  const saveAbout = async (e) => {
+    e.preventDefault();
+    if (!aboutForm) return;
+    setSaving("about");
+    try {
+      const res = await fetch("/api/cms/site-content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ about: aboutForm }),
+        cache: "no-store",
+      });
+      const data = await parseCmsResponse(res);
+      setAboutForm(data.content.about);
+      showToast(
+        "success",
+        "Section Expertise enregistrée. Vérifiez la section « À propos » sur le site."
+      );
+    } catch (err) {
+      showToast("error", err.message);
+    } finally {
+      setSaving(null);
+    }
+  };
 
   const saveHero = async (e) => {
     e.preventDefault();
@@ -380,47 +422,85 @@ export default function CmsDashboard() {
     }
   };
 
+  const activeNavLabel =
+    NAV_ITEMS.find(([id]) => id === tab)?.[1] ?? "CMS";
+
   return (
-    <div className="min-h-screen bg-void text-bone-dim flex">
-      <aside className="w-56 border-r border-border p-6 shrink-0">
-        <p className="font-display text-lg text-bone mb-8">
-          CMS<span className="text-champagne">.</span>
-        </p>
-        {[
-          ["hero", "Hero (accueil)"],
-          ["parcours", "Parcours"],
-          ["manual", "Projets manuels"],
-          ["github", "Projets GitHub"],
-          ["certs", "Certifications"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`block w-full text-left px-3 py-2 mb-1 text-sm ${
-              tab === id ? "bg-champagne/10 text-champagne" : "text-mist hover:text-bone"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+    <div className="min-h-screen bg-void text-bone-dim flex flex-col md:flex-row">
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-void/95 backdrop-blur-md shrink-0">
+        <div className="min-w-0">
+          <p className="font-display text-bone leading-tight">
+            CMS<span className="text-champagne">.</span>
+          </p>
+          <p className="text-mist text-xs truncate">{activeNavLabel}</p>
+        </div>
         <button
           type="button"
-          onClick={logout}
-          className="mt-8 text-sm text-ember hover:underline"
+          onClick={() => setNavOpen((o) => !o)}
+          className="shrink-0 px-3 py-2 text-sm border border-border text-bone hover:border-champagne/40"
+          style={{ borderRadius: "var(--radius-cut)" }}
+          aria-expanded={navOpen}
+          aria-label={navOpen ? "Fermer le menu" : "Ouvrir le menu"}
         >
-          Déconnexion
+          {navOpen ? "Fermer" : "Menu"}
         </button>
-        <a href="/" className="block mt-4 text-sm text-mist hover:text-champagne">
-          ← Voir le site
-        </a>
+      </header>
+
+      {navOpen && (
+        <button
+          type="button"
+          className="md:hidden fixed inset-0 z-40 bg-void/80 backdrop-blur-sm"
+          aria-label="Fermer le menu"
+          onClick={() => setNavOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed md:sticky md:top-0 left-0 z-50 md:z-auto h-[100dvh] md:h-auto md:min-h-screen w-[min(288px,88vw)] md:w-56 shrink-0 border-r border-border bg-void flex flex-col p-4 md:p-6 transition-transform duration-300 ease-out ${
+          navOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
+        <p className="hidden md:block font-display text-lg text-bone mb-6">
+          CMS<span className="text-champagne">.</span>
+        </p>
+        <nav className="flex-1 overflow-y-auto space-y-0.5 -mx-1 px-1">
+          {NAV_ITEMS.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => selectTab(id)}
+              className={`block w-full text-left px-3 py-2.5 text-sm rounded-sm ${
+                tab === id
+                  ? "bg-champagne/10 text-champagne"
+                  : "text-mist hover:text-bone hover:bg-elevated/50"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="pt-4 mt-2 border-t border-border shrink-0">
+          <button
+            type="button"
+            onClick={logout}
+            className="text-sm text-ember hover:underline"
+          >
+            Déconnexion
+          </button>
+          <a
+            href="/"
+            className="block mt-3 text-sm text-mist hover:text-champagne"
+          >
+            ← Voir le site
+          </a>
+        </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto max-h-screen relative">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto md:max-h-screen relative pb-10">
         {toast && (
           <div
             role="status"
-            className={`fixed top-4 right-4 z-50 max-w-md px-4 py-3 border text-sm shadow-lg ${
+            className={`fixed top-16 md:top-4 left-4 right-4 md:left-auto md:right-4 z-50 md:max-w-md px-4 py-3 border text-sm shadow-lg ${
               toast.type === "success"
                 ? "bg-teal/15 border-teal text-teal"
                 : "bg-ember/15 border-ember text-ember"
@@ -442,8 +522,89 @@ export default function CmsDashboard() {
           </div>
         )}
 
+        {tab === "about" && aboutForm && (
+          <form
+            onSubmit={saveAbout}
+            className="surface-card p-4 sm:p-6 space-y-4 w-full max-w-2xl"
+          >
+            <h2 className="font-display text-bone text-lg mb-2">Section Expertise</h2>
+            <p className="text-mist text-sm mb-4">
+              En-tête de la section « Ce que je fais au quotidien » — idéal quand vous
+              changez d&apos;entreprise, de mission ou de positionnement.
+            </p>
+
+            <div>
+              <label className="label-mono !text-[0.6rem] block mb-1">
+                Petit label (ex. Expertise)
+              </label>
+              <input
+                className={inputClass}
+                value={aboutForm.sectionLabel}
+                onChange={(e) =>
+                  setAboutForm({ ...aboutForm, sectionLabel: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="label-mono !text-[0.6rem] block mb-1">
+                  Titre — ligne 1
+                </label>
+                <input
+                  className={inputClass}
+                  value={aboutForm.sectionTitle}
+                  onChange={(e) =>
+                    setAboutForm({ ...aboutForm, sectionTitle: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="label-mono !text-[0.6rem] block mb-1">
+                  Titre — accent (doré)
+                </label>
+                <input
+                  className={inputClass}
+                  value={aboutForm.sectionTitleAccent}
+                  onChange={(e) =>
+                    setAboutForm({
+                      ...aboutForm,
+                      sectionTitleAccent: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="label-mono !text-[0.6rem] block mb-1">
+                Description sous le titre
+              </label>
+              <textarea
+                className={`${inputClass} resize-y min-h-[120px]`}
+                rows={4}
+                value={aboutForm.sectionDescription}
+                onChange={(e) =>
+                  setAboutForm({
+                    ...aboutForm,
+                    sectionDescription: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving === "about"}
+              className="btn-premium btn-premium--primary disabled:opacity-50 w-full sm:w-auto"
+            >
+              {saving === "about" ? "Enregistrement…" : "Enregistrer la section"}
+            </button>
+          </form>
+        )}
+
         {tab === "hero" && heroForm && (
-          <form onSubmit={saveHero} className="surface-card p-6 space-y-4 max-w-2xl">
+          <form onSubmit={saveHero} className="surface-card p-4 sm:p-6 space-y-4 w-full max-w-2xl">
             <h2 className="font-display text-bone text-lg mb-2">Section Hero</h2>
             <p className="text-mist text-sm mb-4">
               Sous-titre, textes rotatifs, CV et liens sociaux — sans toucher au code.
@@ -624,8 +785,8 @@ export default function CmsDashboard() {
         )}
 
         {tab === "parcours" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form onSubmit={saveExperience} className="surface-card p-6 space-y-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+            <form onSubmit={saveExperience} className="surface-card p-4 sm:p-6 space-y-4">
               <h2 className="font-display text-bone text-lg">
                 {editingExpId ? "Modifier l'expérience" : "Nouvelle expérience"}
               </h2>
@@ -745,8 +906,8 @@ export default function CmsDashboard() {
         )}
 
         {tab === "manual" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form onSubmit={saveProject} className="surface-card p-6 space-y-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+            <form onSubmit={saveProject} className="surface-card p-4 sm:p-6 space-y-4">
               <h2 className="font-display text-bone text-lg">
                 {editingId ? "Modifier le projet" : "Nouveau projet manuel"}
               </h2>
@@ -1007,8 +1168,8 @@ export default function CmsDashboard() {
         )}
 
         {tab === "certs" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form onSubmit={saveCert} className="surface-card p-6 space-y-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+            <form onSubmit={saveCert} className="surface-card p-4 sm:p-6 space-y-4">
               <h2 className="font-display text-bone text-lg">
                 {editingCertId ? "Modifier certification" : "Nouvelle certification"}
               </h2>
