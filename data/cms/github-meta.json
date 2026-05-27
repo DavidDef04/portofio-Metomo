@@ -13,5 +13,10 @@
     "visible": true,
     "featured": true,
     "order": 500
+  },
+  "github-807766669": {
+    "visible": false,
+    "featured": false,
+    "order": 500
   }
 }

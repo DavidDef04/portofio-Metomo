@@ -6,6 +6,7 @@ Guide pas à pas après le déploiement sur [Vercel](https://vercel.com).
 
 | Symptôme | Cause probable |
 |----------|----------------|
+| CMS `EROFS` / erreur 500 en prod | Pas de **Vercel Blob** → voir étape 9 |
 | Projets privés GitHub absents | `GITHUB_TOKEN` manquant ou sans scope `repo` |
 | Projets / années OK | Calculés depuis GitHub + date de début de carrière (2024) |
 
@@ -202,17 +203,35 @@ Quand vous poussez du code sur GitHub, le portfolio peut invalider le cache des 
 
 ---
 
-## Limitation importante — CMS et fichiers sur Vercel
+## Étape 9 — Vercel Blob (CMS en production) — **obligatoire**
 
-Vercel est **serverless** : le disque est **éphémère**.
+Sur Vercel, le disque est **en lecture seule** (`EROFS`). Sans Blob Store, le CMS renvoie :
 
-- ✅ **Lecture** : fichiers versionnés dans Git (`data/cms/*.json`, images dans `public/`) → OK
-- ❌ **Écriture** : uploads CMS, modifications JSON via le dashboard **ne persistent pas** après redémarrage / redéploiement
+`EROFS: read-only file system, open '/var/task/data/cms/site-content.json'`
 
-**En pratique :**
+### 9.1 Créer et connecter le Blob Store
 
-1. Configurez le contenu en local, puis **committez** `data/cms/` et `public/images/` dans Git
-2. Ou migrez vers un stockage externe (Vercel Blob, S3, base de données) pour une édition 100 % en production
+1. [vercel.com/dashboard](https://vercel.com/dashboard) → votre projet
+2. Onglet **Storage** → **Create Database / Store** → **Blob**
+3. Nommez le store (ex. `portfolio-cms`) → **Create**
+4. **Connect to Project** → sélectionnez **portofio-Metomo** → environnement **Production** (et Preview si besoin)
+5. Vercel ajoute automatiquement `BLOB_READ_WRITE_TOKEN` au projet
+6. **Redeploy** le dernier déploiement
+
+### 9.2 Comportement après configuration
+
+| Action | Où c’est stocké |
+|--------|------------------|
+| Hero, Expertise, Parcours, projets, certs, meta GitHub | Blob privé `cms-data/*.json` |
+| Images / CV uploadés via le CMS | Blob public `cms-uploads/...` (URL complète enregistrée) |
+| Première lecture sans blob | Fichiers Git `data/cms/*.json` (secours) |
+| En local (sans token) | Fichiers `data/cms/` sur le disque comme avant |
+
+### 9.3 Vérifier
+
+1. `/dashboard` → modifiez un champ → **Enregistrer** → message de succès (plus d’erreur 500)
+2. Rechargez le site public → le changement est visible
+3. Les logs Vercel ne doivent plus afficher `EROFS`
 
 ---
 
@@ -234,5 +253,6 @@ Voir `.env.example` à la racine du projet.
 
 Variables **prioritaires** pour vos deux problèmes actuels :
 
-1. **`GITHUB_TOKEN`** → projets privés + étoiles GitHub
-2. **`ADMIN_USERNAME`** / **`ADMIN_PASSWORD`** → CMS `/login`
+1. **Blob Store** + `BLOB_READ_WRITE_TOKEN` → CMS en production
+2. **`GITHUB_TOKEN`** → projets privés + étoiles GitHub
+3. **`ADMIN_USERNAME`** / **`ADMIN_PASSWORD`** → CMS `/login`

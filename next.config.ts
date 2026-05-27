@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         hostname: "opengraph.githubassets.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
     ],
   },
 };

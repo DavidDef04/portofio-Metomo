@@ -4,6 +4,10 @@ import path from "path";
 import crypto from "crypto";
 import { requireAdmin } from "@/lib/cms-auth";
 import {
+  isBlobStorageEnabled,
+  uploadPublicBlob,
+} from "@/lib/cms-blob-storage";
+import {
   CV_STABLE_PATH,
   CV_DIR,
   cleanupOrphanCvFiles,
@@ -67,8 +71,22 @@ export async function POST(req) {
         await deletePublicAssetIfManaged(previousPath);
       }
 
-      await mkdir(CV_DIR, { recursive: true });
       const buffer = Buffer.from(await file.arrayBuffer());
+
+      if (isBlobStorageEnabled()) {
+        const url = await uploadPublicBlob(
+          "cms-uploads/cv/David_Rene_Metomo_CV.pdf",
+          buffer,
+          "application/pdf"
+        );
+        return NextResponse.json({
+          success: true,
+          path: url,
+          replaced: true,
+        });
+      }
+
+      await mkdir(CV_DIR, { recursive: true });
       const absPath = publicUrlToAbsolute(CV_STABLE_PATH);
       await writeFile(absPath, buffer);
       await cleanupOrphanCvFiles();
@@ -103,9 +121,22 @@ export async function POST(req) {
 
     const ext = EXT_BY_TYPE[file.type];
     const name = `cms-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    if (isBlobStorageEnabled()) {
+      const url = await uploadPublicBlob(
+        `cms-uploads/projects/${name}`,
+        buffer,
+        file.type
+      );
+      return NextResponse.json({
+        success: true,
+        path: url,
+        replaced: Boolean(previousPath),
+      });
+    }
 
     await mkdir(IMAGE_DIR, { recursive: true });
-    const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(path.join(IMAGE_DIR, name), buffer);
 
     return NextResponse.json({
