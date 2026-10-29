@@ -37,9 +37,10 @@ export async function POST(req) {
   try {
     const { email, phone, subject, message, turnstileToken } = await req.json();
 
-    if (!email || !phone || !subject || !message) {
+    // Téléphone facultatif : les clients à l'international écrivent par e-mail.
+    if (!email || !subject || !message) {
       return NextResponse.json(
-        { success: false, error: "Tous les champs sont requis." },
+        { success: false, error: "E-mail, sujet et message sont requis." },
         { status: 400 }
       );
     }

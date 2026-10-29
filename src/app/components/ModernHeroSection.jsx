@@ -1,13 +1,19 @@
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRefetchOnFocus } from "@/lib/useRefetchOnFocus";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
 import { FaWhatsapp, FaGithub, FaLinkedin, FaEnvelope } from "react-icons/fa";
 import { ease, fadeUp, staggerContainer } from "@/lib/motion";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 import AmbientBackground from "./ui/AmbientBackground";
-import { whatsappLink } from "@/config/contact";
+import { whatsappLink, EMAIL } from "@/config/contact";
 
 const socialLinkMotion = {
   hidden: { opacity: 0, y: 16, scale: 0.96 },
@@ -27,6 +33,20 @@ const ModernHeroSection = ({ initialHero }) => {
   const [roleIndex, setRoleIndex] = useState(0);
 
   const roles = hero.roles?.length ? hero.roles : DEFAULT_SITE_CONTENT.hero.roles;
+
+  // Profondeur très légère : la photo remonte un peu moins vite que la page
+  // (28 px sur toute la hauteur du hero). Désactivé si l'utilisateur
+  // préfère réduire les animations.
+  const sectionRef = useRef(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const photoY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 28]);
+  const emailAddress =
+    (hero.social?.email || "").replace(/^mailto:/, "") || EMAIL;
+  const available = hero.available !== false;
 
   const loadHero = useCallback(() => {
     fetch("/api/site-content", { cache: "no-store" })
@@ -83,6 +103,7 @@ const ModernHeroSection = ({ initialHero }) => {
 
   return (
     <section
+      ref={sectionRef}
       id="home"
       className="relative min-h-[100svh] flex items-center"
     >
@@ -97,6 +118,16 @@ const ModernHeroSection = ({ initialHero }) => {
           className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center"
         >
           <div className="order-2 lg:order-1 relative z-10">
+            {available && (
+              <motion.p
+                className="availability-pill mb-6"
+                variants={fadeUp}
+                custom={0}
+              >
+                <span className="availability-dot" aria-hidden />
+                {hero.availabilityText || "Disponible pour des missions"}
+              </motion.p>
+            )}
             <motion.p className="label-mono mb-6" variants={fadeUp} custom={0}>
               {hero.eyebrow}
             </motion.p>
@@ -160,6 +191,20 @@ const ModernHeroSection = ({ initialHero }) => {
               </a>
             </motion.div>
 
+            <motion.p
+              className="mt-5 text-sm text-mist"
+              variants={fadeUp}
+              custom={4}
+            >
+              Hors du Cameroun ? Écrivez-moi :{" "}
+              <a
+                href={`mailto:${emailAddress}`}
+                className="text-bone underline decoration-champagne/50 underline-offset-4 hover:text-champagne transition-colors"
+              >
+                {emailAddress}
+              </a>
+            </motion.p>
+
             <motion.div
               className="flex flex-wrap gap-3 mt-14 pt-8 border-t border-border"
               variants={fadeUp}
@@ -197,7 +242,10 @@ const ModernHeroSection = ({ initialHero }) => {
             variants={fadeUp}
             custom={2}
           >
-            <div className="relative aspect-[4/5] max-w-md mx-auto lg:max-w-none">
+            <motion.div
+              className="relative aspect-[4/5] max-w-md mx-auto lg:max-w-none"
+              style={{ y: photoY }}
+            >
               <div
                 className="absolute -inset-4 border border-border"
                 style={{ borderRadius: "var(--radius-md)" }}
@@ -225,7 +273,7 @@ const ModernHeroSection = ({ initialHero }) => {
                   {hero.statusText}
                 </p>
               </motion.div>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
 

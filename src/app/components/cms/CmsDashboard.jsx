@@ -672,6 +672,27 @@ export default function CmsDashboard() {
               />
             </div>
 
+            <div className="surface-card !bg-transparent p-4 border border-border space-y-3">
+              <label className="flex items-center gap-2 text-sm text-bone">
+                <input
+                  type="checkbox"
+                  checked={heroForm.available !== false}
+                  onChange={(e) =>
+                    setHeroForm({ ...heroForm, available: e.target.checked })
+                  }
+                />
+                Afficher la pastille verte « disponible »
+              </label>
+              <input
+                className={inputClass}
+                placeholder="Disponible pour des missions"
+                value={heroForm.availabilityText || ""}
+                onChange={(e) =>
+                  setHeroForm({ ...heroForm, availabilityText: e.target.value })
+                }
+              />
+            </div>
+
             <div>
               <label className="label-mono !text-[0.6rem] block mb-1">
                 Photo de profil (portrait, idéalement 4:5 — 1200 × 1500 px)
