@@ -780,6 +780,32 @@ export default function CmsDashboard() {
 
             <div>
               <label className="label-mono !text-[0.6rem] block mb-1">
+                CV en anglais (lien sous les boutons du hero)
+              </label>
+              <input
+                className={inputClass}
+                placeholder="/cv/Resume_David_Rene_METOMO_EN_2026.pdf"
+                value={heroForm.cvEnUrl || ""}
+                onChange={(e) =>
+                  setHeroForm({ ...heroForm, cvEnUrl: e.target.value })
+                }
+              />
+              <input
+                className={`${inputClass} mt-2`}
+                placeholder="English resume"
+                value={heroForm.cvEnLabel || ""}
+                onChange={(e) =>
+                  setHeroForm({ ...heroForm, cvEnLabel: e.target.value })
+                }
+              />
+              <p className="text-mist text-xs mt-1">
+                Laissez le lien vide pour masquer le CV anglais. Pour le remplacer,
+                déposez le nouveau PDF dans public/cv/ du projet.
+              </p>
+            </div>
+
+            <div>
+              <label className="label-mono !text-[0.6rem] block mb-1">
                 Texte bouton WhatsApp
               </label>
               <input

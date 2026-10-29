@@ -28,7 +28,11 @@ export async function POST(req) {
   const signature = req.headers.get("x-hub-signature-256");
   const event = req.headers.get("x-github-event");
 
-  if (WEBHOOK_SECRET && !verifySignature(payload, signature)) {
+  // Sans secret configuré, aucune requête ne peut être authentifiée : refus.
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Webhook non configuré" }, { status: 503 });
+  }
+  if (!verifySignature(payload, signature)) {
     return NextResponse.json({ error: "Signature invalide" }, { status: 401 });
   }
 
@@ -50,8 +54,5 @@ export async function POST(req) {
 }
 
 export async function GET() {
-  return NextResponse.json({
-    ok: true,
-    message: "Webhook GitHub actif. Envoyez des événements push ici.",
-  });
+  return NextResponse.json({ ok: true });
 }

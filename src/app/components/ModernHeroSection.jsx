@@ -203,6 +203,19 @@ const ModernHeroSection = ({ initialHero }) => {
               >
                 {emailAddress}
               </a>
+              {hero.cvEnUrl && (
+                <>
+                  {" · "}
+                  <a
+                    href={hero.cvEnUrl}
+                    download
+                    lang="en"
+                    className="text-bone underline decoration-champagne/50 underline-offset-4 hover:text-champagne transition-colors"
+                  >
+                    {hero.cvEnLabel || "English resume"}
+                  </a>
+                </>
+              )}
             </motion.p>
 
             <motion.div
