@@ -226,13 +226,13 @@ const ModernHeroSection = () => {
         </motion.div>
 
         <motion.a
-          href="#achievements"
+          href="#projects"
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 label-mono !text-[0.6rem] text-mist hover:text-champagne transition-colors"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
         >
-          <span>Explorer</span>
+          <span>Voir les projets</span>
           <motion.span
             className="block w-px h-8 bg-gradient-to-b from-champagne/50 to-transparent"
             animate={{ scaleY: [1, 0.6, 1] }}

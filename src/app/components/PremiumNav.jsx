@@ -7,9 +7,9 @@ import { whatsappLink } from "@/config/contact";
 
 const navItems = [
   { id: "home", label: "Accueil", href: "#home" },
+  { id: "projects", label: "Travaux", href: "#projects" },
   { id: "achievements", label: "Impact", href: "#achievements" },
   { id: "about", label: "Expertise", href: "#about" },
-  { id: "projects", label: "Travaux", href: "#projects" },
   { id: "contact", label: "Contact", href: "#contact" },
 ];
 

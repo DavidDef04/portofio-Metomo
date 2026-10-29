@@ -1,330 +1,371 @@
 "use client";
-import React, {
-  useState,
-  useRef,
-  forwardRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { FaGithub, FaExternalLinkAlt, FaStar, FaCodeBranch, FaLock } from "react-icons/fa";
+import { FaGithub, FaArrowRight, FaLock } from "react-icons/fa";
 import SectionHeader from "./ui/SectionHeader";
 import AmbientBackground from "./ui/AmbientBackground";
-import { fadeUp, staggerContainer } from "@/lib/motion";
+import { fadeUp } from "@/lib/motion";
 
-const categories = ["Tous", "Web", "Mobile", "Cybersécurité", "IA"];
-const REFRESH_COOLDOWN_MS = 45_000;
-const QUICK_TIMEOUT_MS = 15_000;
-const FULL_TIMEOUT_MS = 90_000;
+const ALL = "Tous";
+const CATEGORY_ORDER = ["Web", "Mobile", "Cybersécurité", "IA"];
+const OTHERS_PREVIEW = 6;
+const FULL_TIMEOUT_MS = 60_000;
 
-async function fetchProjectsJson(url, timeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+/** Un lien « démo » qui pointe vers GitHub n'est pas une démo. */
+function liveLink(project) {
+  const url = (project.liveUrl || "").trim();
+  if (!url || url === "#" || /github\.com/i.test(url)) return "";
+  return url;
+}
+
+function codeLink(project) {
+  if (project.private) return "";
+  return (project.githubUrl || "").trim();
+}
+
+function hostOf(url) {
   try {
-    const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  } finally {
-    clearTimeout(timer);
+    return new URL(url).host.replace(/^www\./, "");
+  } catch {
+    return "";
   }
 }
 
-const ModernProjectSection = forwardRef((props, ref) => {
-  const [selectedCategory, setSelectedCategory] = useState("Tous");
-  const [allProjects, setAllProjects] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const [lastSync, setLastSync] = useState(null);
-  const sectionRef = useRef(null);
-  const inFlightRef = useRef(false);
-  const lastLoadRef = useRef(0);
-  const projectsRef = useRef([]);
-
-  useEffect(() => {
-    projectsRef.current = allProjects;
-  }, [allProjects]);
-
-  const loadProjects = useCallback(async ({ background = false } = {}) => {
-    if (inFlightRef.current) return;
-
-    if (background) {
-      const elapsed = Date.now() - lastLoadRef.current;
-      if (elapsed < REFRESH_COOLDOWN_MS) return;
-    }
-
-    inFlightRef.current = true;
-    const hasProjects = projectsRef.current.length > 0;
-
-    if (!background || !hasProjects) {
-      setIsLoading(true);
-    }
-    setLoadError(null);
-
-    try {
-      const quickData = await fetchProjectsJson(
-        "/api/projects?quick=1",
-        QUICK_TIMEOUT_MS
-      );
-      if (quickData.success && quickData.projects?.length > 0) {
-        setAllProjects(quickData.projects);
-        setLastSync(new Date());
-        if (!background) setIsLoading(false);
-      }
-
-      try {
-        const fullData = await fetchProjectsJson("/api/projects", FULL_TIMEOUT_MS);
-        if (fullData.success) {
-          setAllProjects(fullData.projects);
-          setLastSync(new Date());
-        }
-      } catch (syncErr) {
-        if (!hasProjects && !quickData.success) throw syncErr;
-        console.warn("[projects] sync GitHub:", syncErr.message);
-      }
-    } catch (e) {
-      if (e.name === "AbortError") return;
-      if (projectsRef.current.length === 0) {
-        setLoadError(
-          "Impossible de charger les projets. Vérifiez que le serveur est démarré (npm run dev)."
-        );
-      }
-      console.warn("[projects]", e.message);
-    } finally {
-      inFlightRef.current = false;
-      lastLoadRef.current = Date.now();
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProjects({ background: false });
-
-    let debounceId;
-    const scheduleRefresh = () => {
-      if (document.visibilityState !== "visible") return;
-      clearTimeout(debounceId);
-      debounceId = setTimeout(() => {
-        loadProjects({ background: true });
-      }, 400);
-    };
-
-    window.addEventListener("focus", scheduleRefresh);
-    document.addEventListener("visibilitychange", scheduleRefresh);
-    return () => {
-      clearTimeout(debounceId);
-      window.removeEventListener("focus", scheduleRefresh);
-      document.removeEventListener("visibilitychange", scheduleRefresh);
-    };
-  }, [loadProjects]);
-
-  const filtered =
-    selectedCategory === "Tous"
-      ? allProjects
-      : allProjects.filter((p) => p.category === selectedCategory);
-
-  const display = filtered;
+/* ─── Visuel : capture du projet, ou composition typographique ─── */
+function ProjectVisual({ project, index, large = false }) {
+  const [broken, setBroken] = useState(false);
+  const hasImage = project.image && !broken;
 
   return (
-    <section ref={sectionRef} id="projects" className="section-shell relative">
+    <div
+      className={`relative overflow-hidden bg-elevated ${
+        large ? "aspect-[16/10]" : "aspect-[16/9]"
+      }`}
+    >
+      {hasImage ? (
+        <img
+          src={project.image}
+          alt={`Aperçu du projet ${project.title}`}
+          loading={index < 2 ? "eager" : "lazy"}
+          decoding="async"
+          className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
+          onError={() => setBroken(true)}
+        />
+      ) : (
+        <div className="project-visual-fallback absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+          <span className="label-mono !text-[0.6rem] mb-3">{project.category}</span>
+          <span
+            className={`font-display font-semibold text-bone/90 leading-none ${
+              large ? "text-4xl md:text-6xl" : "text-2xl"
+            }`}
+          >
+            {project.title}
+          </span>
+        </div>
+      )}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-void/50 via-transparent to-transparent" />
+    </div>
+  );
+}
+
+function TechList({ items = [], max }) {
+  const list = max ? items.slice(0, max) : items;
+  if (!list.length) return null;
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {list.map((t) => (
+        <li
+          key={t}
+          className="text-[0.7rem] text-silver border border-border px-2.5 py-1"
+          style={{ borderRadius: "var(--radius-cut)" }}
+        >
+          {t}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ─── Projet en vedette : étude de cas ─── */
+function FeaturedProject({ project, index }) {
+  const live = liveLink(project);
+  const code = codeLink(project);
+  const reversed = index % 2 === 1;
+
+  return (
+    <motion.article
+      className="group grid lg:grid-cols-12 gap-8 lg:gap-14 items-center"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+    >
+      <div className={`lg:col-span-7 ${reversed ? "lg:order-2" : ""}`}>
+        <div className="clip-chamfer border border-border">
+          {live ? (
+            <a href={live} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${project.title}`}>
+              <ProjectVisual project={project} index={index} large />
+            </a>
+          ) : (
+            <ProjectVisual project={project} index={index} large />
+          )}
+        </div>
+      </div>
+
+      <div className={`lg:col-span-5 ${reversed ? "lg:order-1" : ""}`}>
+        <p className="label-mono !text-[0.6rem] mb-4">
+          {String(index + 1).padStart(2, "0")} — {project.category}
+        </p>
+        <h3 className="font-display text-h2 text-bone font-semibold mb-5">
+          {project.title}
+        </h3>
+        <p className="text-bone-dim leading-relaxed mb-6 whitespace-pre-line">
+          {project.description}
+        </p>
+        <div className="mb-8">
+          <TechList items={project.technologies} />
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          {live && (
+            <a
+              href={live}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-premium btn-premium--primary"
+            >
+              Voir le site
+              <FaArrowRight className="text-[0.7rem]" aria-hidden />
+            </a>
+          )}
+          {code && (
+            <a
+              href={code}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-premium btn-premium--ghost"
+            >
+              <FaGithub aria-hidden /> Code source
+            </a>
+          )}
+          {!code && project.private && (
+            <span className="flex items-center gap-2 text-xs text-mist">
+              <FaLock className="text-champagne text-[10px]" aria-hidden />
+              Code privé (projet client)
+            </span>
+          )}
+          {live && (
+            <span className="text-xs text-mist">{hostOf(live)}</span>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+/* ─── Autres travaux : carte compacte, sans image ─── */
+function OtherProject({ project }) {
+  const live = liveLink(project);
+  const code = codeLink(project);
+  const href = live || code;
+
+  return (
+    <article className="surface-card !rounded-none p-6 flex flex-col h-full">
+      <p className="label-mono !text-[0.55rem] mb-3">{project.category}</p>
+      <h4 className="font-display text-lg text-bone font-semibold mb-2">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-champagne transition-colors"
+          >
+            {project.title}
+          </a>
+        ) : (
+          project.title
+        )}
+      </h4>
+      {project.description && (
+        <p className="text-mist text-sm line-clamp-3 mb-4">{project.description}</p>
+      )}
+      <div className="mt-auto pt-2 flex items-end justify-between gap-4">
+        <TechList items={project.technologies} max={3} />
+        <div className="flex items-center gap-3 text-mist shrink-0">
+          {code && (
+            <a
+              href={code}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-bone transition-colors"
+              aria-label={`Code source de ${project.title}`}
+            >
+              <FaGithub />
+            </a>
+          )}
+          {!code && project.private && (
+            <FaLock className="text-[10px] text-champagne/70" title="Dépôt privé" aria-label="Dépôt privé" />
+          )}
+          {live && (
+            <a
+              href={live}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-champagne transition-colors"
+              aria-label={`Voir ${project.title} en ligne`}
+            >
+              <FaArrowRight className="text-xs" />
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/** @param {{ initialProjects?: any[] }} props */
+export default function ModernProjectSection({ initialProjects }) {
+  const [projects, setProjects] = useState(() => initialProjects || []);
+  const [loading, setLoading] = useState(() => !initialProjects?.length);
+  const [category, setCategory] = useState(ALL);
+  const [showAllOthers, setShowAllOthers] = useState(false);
+
+  // Les projets du CMS arrivent avec la page ; on complète ensuite
+  // avec les dépôts GitHub synchronisés, en arrière-plan.
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FULL_TIMEOUT_MS);
+    fetch("/api/projects", { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.success && Array.isArray(data.projects)) setProjects(data.projects);
+      })
+      .catch(() => {})
+      .finally(() => {
+        clearTimeout(timer);
+        setLoading(false);
+      });
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, []);
+
+  const featured = useMemo(() => projects.filter((p) => p.featured), [projects]);
+  const others = useMemo(() => projects.filter((p) => !p.featured), [projects]);
+
+  const categories = useMemo(() => {
+    const present = new Set(others.map((p) => p.category));
+    return [ALL, ...CATEGORY_ORDER.filter((c) => present.has(c))];
+  }, [others]);
+
+  const filteredOthers =
+    category === ALL ? others : others.filter((p) => p.category === category);
+  const visibleOthers = showAllOthers
+    ? filteredOthers
+    : filteredOthers.slice(0, OTHERS_PREVIEW);
+
+  return (
+    <section id="projects" className="section-shell relative">
       <AmbientBackground />
       <SectionHeader
-        label="Études de cas"
+        label="Réalisations"
         title="Projets"
-        titleAccent="& réalisations"
-        description="Projets manuels et dépôts GitHub (publics et privés). Visibilité gérée depuis le CMS."
+        titleAccent="sélectionnés"
+        description="Des plateformes complètes en production, de l'API au déploiement, et des travaux pratiques en cybersécurité."
       />
 
-      {isLoading && (
-        <p className="text-center label-mono text-mist mb-8">Chargement des projets…</p>
-      )}
-      {loadError && (
-        <p className="text-center text-ember text-sm mb-8">{loadError}</p>
-      )}
-      {!isLoading && !loadError && lastSync && (
-        <p className="text-center text-mist text-xs mb-8">
-          {allProjects.length} projet{allProjects.length > 1 ? "s" : ""} visible
-          · Dernière synchro : {lastSync.toLocaleString("fr-CM")}
-        </p>
+      {loading && featured.length === 0 && (
+        <div className="grid lg:grid-cols-12 gap-10 animate-pulse" aria-hidden>
+          <div className="lg:col-span-7 aspect-[16/10] bg-elevated" />
+          <div className="lg:col-span-5 space-y-4">
+            <div className="h-3 w-24 bg-elevated" />
+            <div className="h-8 w-2/3 bg-elevated" />
+            <div className="h-4 w-full bg-elevated" />
+            <div className="h-4 w-5/6 bg-elevated" />
+          </div>
+        </div>
       )}
 
-      <motion.div
-        className="flex flex-wrap gap-2 mb-12 justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 text-xs uppercase tracking-widest border transition-colors ${
-              selectedCategory === cat
-                ? "border-champagne text-champagne bg-champagne/5"
-                : "border-border text-mist hover:text-bone"
-            }`}
-            style={{ borderRadius: "var(--radius-cut)" }}
-          >
-            {cat}
-          </button>
-        ))}
-      </motion.div>
+      {featured.length > 0 && (
+        <div className="space-y-24 md:space-y-32">
+          {featured.map((p, i) => (
+            <FeaturedProject key={p.id} project={p} index={i} />
+          ))}
+        </div>
+      )}
 
-      {isLoading && display.length === 0 && (
-        <motion.div
-          className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-3"
-          aria-hidden
-        >
-          {[0, 1, 2].map((n) => (
-            <div
-              key={n}
-              className="surface-card !rounded-none overflow-hidden animate-pulse"
-            >
-              <motion.div className="aspect-[16/10] bg-elevated" />
-              <div className="p-6 space-y-3">
-                <div className="h-3 w-24 bg-elevated rounded" />
-                <motion.div className="h-5 w-3/4 bg-elevated rounded" />
-                <div className="h-4 w-full bg-elevated rounded" />
-              </div>
+      {others.length > 0 && (
+        <div className="mt-28 md:mt-36">
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
+            <div>
+              <p className="label-mono mb-3">Archives</p>
+              <h3 className="font-display text-h3 text-bone font-semibold">
+                Autres travaux
+              </h3>
             </div>
-          ))}
-        </motion.div>
-      )}
-
-      {!isLoading && display.length > 0 && (
-        <motion.div
-          key={`grid-${display.length}-${selectedCategory}`}
-          className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-        >
-          {display.map((project, i) => (
-            <motion.article
-              key={project.id}
-              variants={fadeUp}
-              custom={i}
-              className="group surface-card !rounded-none overflow-hidden flex flex-col"
-            >
-              <div className="relative aspect-[16/10] overflow-hidden bg-elevated">
-                {project.image && (
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover opacity-80 group-hover:scale-[1.03] transition-transform duration-700"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
+            {categories.length > 2 && (
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par catégorie">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    aria-pressed={category === cat}
+                    onClick={() => {
+                      setCategory(cat);
+                      setShowAllOthers(false);
                     }}
-                  />
-                )}
-                <motion.div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent" />
-                {project.private && (
-                  <span className="absolute top-3 left-3 flex items-center gap-1 text-xs text-champagne bg-void/80 px-2 py-1">
-                    <FaLock className="text-[10px]" /> Privé
-                  </span>
-                )}
-                <div className="absolute top-4 right-4 flex gap-3 text-xs text-silver">
-                  <span className="flex items-center gap-1">
-                    <FaStar className="text-champagne" /> {project.stars ?? 0}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <FaCodeBranch /> {project.forks ?? 0}
-                  </span>
-                </div>
+                    className={`px-4 py-2 text-xs uppercase tracking-widest border transition-colors ${
+                      category === cat
+                        ? "border-champagne text-champagne bg-champagne/5"
+                        : "border-border text-mist hover:text-bone"
+                    }`}
+                    style={{ borderRadius: "var(--radius-cut)" }}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
 
-              <div className="p-6 flex flex-col flex-1">
-                <p className="label-mono !text-[0.55rem] mb-2">
-                  {project.category} · {project.source === "manual" ? "CMS" : "GitHub"}
-                </p>
-                <h3 className="font-display text-lg text-bone font-semibold mb-2 group-hover:text-champagne transition-colors">
-                  {project.title}
-                </h3>
-                <p className="text-mist text-sm line-clamp-2 mb-4 flex-1">
-                  {project.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {(project.technologies || []).slice(0, 3).map((t) => (
-                    <span
-                      key={t}
-                      className="text-[0.65rem] text-mist border border-border px-2 py-0.5"
-                      style={{ borderRadius: "var(--radius-cut)" }}
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-3 pt-4 border-t border-border items-center">
-                  {project.private ? (
-                    <span
-                      className="text-mist/60 cursor-not-allowed flex items-center gap-1.5 text-xs"
-                      title="Dépôt GitHub privé — le code n'est pas accessible publiquement"
-                    >
-                      <FaGithub />
-                      <FaLock className="text-[10px] text-champagne" />
-                    </span>
-                  ) : (
-                    project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-mist hover:text-bone transition-colors"
-                        aria-label="Voir le dépôt GitHub"
-                      >
-                        <FaGithub />
-                      </a>
-                    )
-                  )}
-                  {project.liveUrl && project.liveUrl !== "#" && (
-                    <a
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-mist hover:text-champagne transition-colors"
-                      aria-label="Voir le projet"
-                    >
-                      <FaExternalLinkAlt className="text-sm" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </motion.div>
+          <div className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-3">
+            {visibleOthers.map((p) => (
+              <OtherProject key={p.id} project={p} />
+            ))}
+          </div>
+
+          {filteredOthers.length > OTHERS_PREVIEW && (
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                onClick={() => setShowAllOthers((v) => !v)}
+                className="btn-premium btn-premium--ghost"
+              >
+                {showAllOthers
+                  ? "Réduire"
+                  : `Voir les ${filteredOthers.length} travaux`}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
-      {!isLoading && display.length === 0 && !loadError && (
+      {!loading && projects.length === 0 && (
         <p className="text-center text-mist py-16">
-          Aucun projet visible. Activez-en depuis le{" "}
-          <a href="/login" className="text-champagne hover:underline">
-            CMS
-          </a>
-          .
+          Les projets arrivent bientôt.
         </p>
       )}
 
-      <div className="mt-16 flex flex-wrap justify-center gap-4">
-        <button
-          type="button"
-          onClick={() => loadProjects({ background: false })}
-          className="btn-premium btn-premium--ghost"
-        >
-          Actualiser
-        </button>
+      <div className="mt-16 flex justify-center">
         <a
           href="https://github.com/DavidDef04"
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-premium btn-premium--primary"
+          className="btn-premium btn-premium--ghost"
         >
-          GitHub
+          <FaGithub aria-hidden /> Tout mon GitHub
         </a>
       </div>
     </section>
   );
-});
-
-ModernProjectSection.displayName = "ModernProjectSection";
-export default ModernProjectSection;
+}

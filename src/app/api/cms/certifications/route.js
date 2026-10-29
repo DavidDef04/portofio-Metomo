@@ -26,6 +26,7 @@ export async function POST(req) {
       name: body.name?.trim() || "",
       issuer: body.issuer?.trim() || "",
       date: body.date?.trim() || "",
+      url: body.url?.trim() || "",
       description: body.description?.trim() || "",
       visible: body.visible !== false,
       order: Number(body.order) || 100,

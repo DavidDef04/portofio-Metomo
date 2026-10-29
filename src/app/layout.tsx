@@ -29,7 +29,7 @@ const newsreader = Newsreader({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://david-metomo.dev";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://portofio-metomo.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -38,12 +38,15 @@ export const metadata: Metadata = {
     template: "%s | David METOMO",
   },
   description:
-    "Développeur full-stack à Douala (ALC Digital). Sites web, SEO, déploiement, Django, Laravel, PHP, JavaScript, SQL, n8n et automatisation.",
+    "Développeur full-stack et junior en cybersécurité à Douala. Plateformes SaaS, sites web, API (Next.js, NestJS, Laravel, Django), SEO, déploiement. Certifié Google Cybersecurity.",
   keywords: [
     "développeur full-stack Douala",
     "développeur web Cameroun",
     "SEO référencement",
     "Laravel Django PHP",
+    "Next.js NestJS",
+    "cybersécurité Cameroun",
+    "pentest junior Douala",
     "David METOMO",
   ],
   authors: [{ name: "David René METOMO", url: siteUrl }],
@@ -55,7 +58,7 @@ export const metadata: Metadata = {
     siteName: "METOMO Studio",
     title: "David René METOMO — Expériences digitales premium",
     description:
-      "Développeur full-stack — sites web, SEO, déploiement et automatisation. Basé à Douala.",
+      "Développeur full-stack qui pense sécurité : plateformes SaaS, sites web, API et déploiement. Basé à Douala.",
     images: [
       {
         url: "/images/image.png",
@@ -69,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "David René METOMO — Studio digital premium",
     description:
-      "Développeur full-stack — Django, Laravel, PHP, JS, SEO, déploiement, n8n.",
+      "Développeur full-stack et cybersécurité — Next.js, NestJS, Laravel, Django, SEO, déploiement.",
     images: ["/images/image.png"],
   },
   robots: { index: true, follow: true },
@@ -102,9 +105,18 @@ const jsonLd = {
     "Laravel",
     "PHP",
     "JavaScript",
+    "TypeScript",
+    "Next.js",
+    "NestJS",
     "SEO",
     "Cybersécurité",
   ],
+  hasCredential: {
+    "@type": "EducationalOccupationalCredential",
+    name: "Google Cybersecurity Professional Certificate",
+    credentialCategory: "certificate",
+    recognizedBy: { "@type": "Organization", name: "Google" },
+  },
 };
 
 export default function RootLayout({

@@ -32,8 +32,8 @@ const ModernFooter = () => {
             <ul className="space-y-2 text-sm">
               {[
                 ["#home", "Accueil"],
-                ["#about", "Expertise"],
                 ["#projects", "Travaux"],
+                ["#about", "Expertise"],
                 ["#contact", "Contact"],
               ].map(([href, label]) => (
                 <li key={href}>

@@ -354,3 +354,25 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Visuel de projet sans capture : composition typographique sobre */
+.project-visual-fallback {
+  background:
+    radial-gradient(120% 90% at 85% 0%, var(--glow-champagne) 0%, transparent 60%),
+    radial-gradient(90% 80% at 0% 100%, var(--glow-teal) 0%, transparent 65%),
+    linear-gradient(var(--border) 1px, transparent 1px) 0 0 / 100% 2.5rem,
+    linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0 / 2.5rem 100%,
+    var(--elevated);
+}
+
+/* Compétences en étiquettes (remplace les barres en pourcentage) */
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--bone-dim);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-cut);
+  background: rgba(232, 228, 220, 0.02);
+}

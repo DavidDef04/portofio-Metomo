@@ -32,6 +32,7 @@ const emptyCert = {
   name: "",
   issuer: "",
   date: "",
+  url: "",
   description: "",
   visible: true,
   order: 100,
@@ -1173,23 +1174,30 @@ export default function CmsDashboard() {
               <h2 className="font-display text-bone text-lg">
                 {editingCertId ? "Modifier certification" : "Nouvelle certification"}
               </h2>
-              {["name", "issuer", "date"].map((f) => (
+              {[
+                ["name", "Nom de la certification", "Certificat professionnel Google Cybersecurity"],
+                ["issuer", "Organisme", "Google (Coursera)"],
+                ["date", "Date d'obtention", "Octobre 2026"],
+                ["url", "Lien de vérification (facultatif)", "https://www.coursera.org/account/accomplishments/…"],
+              ].map(([f, label, placeholder]) => (
                 <div key={f}>
-                  <label className="label-mono !text-[0.6rem] block mb-1">{f}</label>
+                  <label className="label-mono !text-[0.6rem] block mb-1">{label}</label>
                   <input
                     className={inputClass}
-                    value={certForm[f]}
+                    type={f === "url" ? "url" : "text"}
+                    placeholder={placeholder}
+                    value={certForm[f] || ""}
                     onChange={(e) => setCertForm({ ...certForm, [f]: e.target.value })}
                     required={f === "name"}
                   />
                 </div>
               ))}
               <div>
-                <label className="label-mono !text-[0.6rem] block mb-1">description</label>
+                <label className="label-mono !text-[0.6rem] block mb-1">Description</label>
                 <textarea
                   className={`${inputClass} resize-none`}
-                  rows={3}
-                  value={certForm.description}
+                  rows={4}
+                  value={certForm.description || ""}
                   onChange={(e) =>
                     setCertForm({ ...certForm, description: e.target.value })
                   }
@@ -1230,7 +1238,7 @@ export default function CmsDashboard() {
                       className="text-xs text-champagne"
                       onClick={() => {
                         setEditingCertId(c.id);
-                        setCertForm(c);
+                        setCertForm({ ...emptyCert, ...c });
                       }}
                     >
                       Modifier

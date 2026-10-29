@@ -8,10 +8,12 @@ import { ease } from "@/lib/motion";
 import { whatsappLink } from "@/config/contact";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 
-const ModernAboutSection = forwardRef((props, ref) => {
+const ModernAboutSection = forwardRef(
+  /** @param {{ initialCertifications?: any[] }} props */
+  ({ initialCertifications }, ref) => {
   const [activeTab, setActiveTab] = useState("skills");
 
-  const [certifications, setCertifications] = useState([]);
+  const [certifications, setCertifications] = useState(() => initialCertifications || []);
   const [aboutMeta, setAboutMeta] = useState(DEFAULT_SITE_CONTENT.about);
   const [experiences, setExperiences] = useState(DEFAULT_SITE_CONTENT.experiences);
   const [education, setEducation] = useState(DEFAULT_SITE_CONTENT.education);
@@ -20,7 +22,12 @@ const ModernAboutSection = forwardRef((props, ref) => {
     { id: "skills", label: "Stack" },
     { id: "experience", label: "Parcours" },
     { id: "education", label: "Formation" },
-    { id: "certifications", label: "Certifications" },
+    {
+      id: "certifications",
+      label: certifications.length
+        ? `Certifications (${certifications.length})`
+        : "Certifications",
+    },
   ];
 
   const loadAboutContent = useCallback(() => {
@@ -44,73 +51,70 @@ const ModernAboutSection = forwardRef((props, ref) => {
 
   useRefetchOnFocus(loadAboutContent);
 
-  const skills = {
-    development: [
-      { name: "PHP / Laravel", level: 80 },
-      { name: "Python / Django", level: 75 },
-      { name: "JavaScript", level: 80 },
-      { name: "React / Next.js", level: 75 },
-      { name: "SQL & bases de données", level: 78 },
-      { name: "HTML / CSS / Tailwind", level: 85 },
-    ],
-    delivery: [
-      { name: "SEO & référencement", level: 75 },
-      { name: "Optimisation de sites", level: 72 },
-      { name: "Déploiement", level: 78 },
-      { name: "FileZilla / FTP", level: 80 },
-      { name: "n8n (automatisations)", level: 70 },
-      { name: "IA & Notion (productivité)", level: 75 },
-    ],
-    systems: [
-      { name: "Windows Server", level: 72 },
-      { name: "Linux", level: 65 },
-      { name: "Git", level: 80 },
-      { name: "Administration système", level: 68 },
-    ],
-    cybersecurity: [
-      { name: "Bases du pentesting", level: 60 },
-      { name: "Sensibilisation sécurité", level: 65 },
-      { name: "Sécurité réseau (notions)", level: 58 },
-    ],
-  };
-
-  const SkillBar = ({ skill }) => (
-    <div className="mb-5">
-      <div className="flex justify-between mb-2">
-        <span className="text-bone text-sm font-medium">{skill.name}</span>
-        <span className="text-mist text-xs tabular-nums">{skill.level}%</span>
-      </div>
-      <div className="h-px bg-elevated-2 relative overflow-hidden">
-        <motion.div
-          className="absolute inset-y-0 left-0 bg-champagne"
-          initial={{ width: 0 }}
-          whileInView={{ width: `${skill.level}%` }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: ease.outExpo }}
-        />
-      </div>
-    </div>
-  );
+  // Compétences en étiquettes : des outils concrets plutôt que des
+  // pourcentages auto-évalués, que les recruteurs lisent mal.
+  const skillGroups = [
+    {
+      title: "Développement",
+      items: [
+        "PHP / Laravel",
+        "Python / Django",
+        "JavaScript / TypeScript",
+        "React / Next.js",
+        "NestJS",
+        "Prisma",
+        "Spring Boot",
+        "Astro",
+        "HTML / CSS / Tailwind",
+        "SQL · PostgreSQL · MySQL",
+      ],
+    },
+    {
+      title: "Mise en ligne & automatisation",
+      items: [
+        "Docker",
+        "Vercel · Coolify · VPS",
+        "Git · GitHub Actions",
+        "SEO & référencement",
+        "FileZilla / FTP",
+        "n8n",
+        "IA générative (API LLM)",
+      ],
+    },
+    {
+      title: "Cybersécurité",
+      items: [
+        "Linux & Bash",
+        "Python pour l'automatisation",
+        "SIEM (Splunk, Chronicle)",
+        "Analyse réseau (Wireshark, tcpdump)",
+        "Détection d'intrusion (Suricata)",
+        "Gestion des risques (NIST CSF)",
+        "Réponse aux incidents",
+        "Sensibilisation au phishing",
+      ],
+    },
+    {
+      title: "Systèmes",
+      items: ["Linux", "Windows Server", "Administration système"],
+    },
+  ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "skills":
         return (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {[
-              { title: "Développement", items: skills.development },
-              { title: "Mise en ligne & SEO", items: skills.delivery },
-              { title: "Systèmes", items: skills.systems },
-              {
-                title: "Cybersécurité (parcours)",
-                items: skills.cybersecurity,
-              },
-            ].map((group) => (
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
+            {skillGroups.map((group) => (
               <div key={group.title}>
-                <h3 className="label-mono mb-6">{group.title}</h3>
-                {group.items.map((s) => (
-                  <SkillBar key={s.name} skill={s} />
-                ))}
+                <h3 className="label-mono mb-5">{group.title}</h3>
+                <ul className="flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <li key={item} className="skill-chip">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -167,7 +171,11 @@ const ModernAboutSection = forwardRef((props, ref) => {
             Aucune certification publiée pour le moment.
           </p>
         ) : (
-          <div className="grid md:grid-cols-2 gap-px bg-border">
+          <div
+            className={`grid gap-px bg-border ${
+              certifications.length > 1 ? "md:grid-cols-2" : ""
+            }`}
+          >
             {certifications.map((cert) => (
               <div
                 key={cert.id}
@@ -176,7 +184,19 @@ const ModernAboutSection = forwardRef((props, ref) => {
                 <h3 className="text-bone font-medium mb-2">{cert.name}</h3>
                 <p className="text-champagne text-sm">{cert.issuer}</p>
                 <p className="label-mono !text-[0.6rem] mt-2 mb-3">{cert.date}</p>
-                <p className="text-mist text-sm">{cert.description}</p>
+                {cert.description && (
+                  <p className="text-mist text-sm whitespace-pre-line">{cert.description}</p>
+                )}
+                {cert.url && (
+                  <a
+                    href={cert.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-4 text-sm text-champagne hover:underline"
+                  >
+                    Vérifier le certificat →
+                  </a>
+                )}
               </div>
             ))}
           </div>
