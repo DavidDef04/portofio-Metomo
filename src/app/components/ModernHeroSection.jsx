@@ -19,8 +19,11 @@ const socialLinkMotion = {
   }),
 };
 
-const ModernHeroSection = () => {
-  const [hero, setHero] = useState(DEFAULT_SITE_CONTENT.hero);
+/** @param {{ initialHero?: any }} props */
+const ModernHeroSection = ({ initialHero }) => {
+  // Contenu du CMS fourni par le serveur : pas de saut de texte ni de photo
+  // au chargement, et textes réels visibles par Google.
+  const [hero, setHero] = useState(() => initialHero || DEFAULT_SITE_CONTENT.hero);
   const [roleIndex, setRoleIndex] = useState(0);
 
   const roles = hero.roles?.length ? hero.roles : DEFAULT_SITE_CONTENT.hero.roles;
@@ -201,7 +204,8 @@ const ModernHeroSection = () => {
               />
               <div className="clip-chamfer relative overflow-hidden bg-elevated aspect-[4/5]">
                 <Image
-                  src="/images/image.png"
+                  src={hero.photoUrl || "/images/image.png"}
+                  unoptimized={(hero.photoUrl || "").startsWith("/api/")}
                   alt={`${hero.nameLine1} ${hero.nameHighlight} — Développeur full-stack`}
                   fill
                   priority

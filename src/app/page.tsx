@@ -10,6 +10,7 @@ import ModernScrollToTopButton from "./components/ModernScrollToTopButton";
 import WhatsAppButton from "./components/WhatsAppButton";
 import { getMergedProjects } from "@/lib/projects-merge";
 import { getCertifications } from "@/lib/cms-store";
+import { getPublicSiteContent } from "@/lib/site-content";
 
 // Page régénérée toutes les 5 min, et immédiatement après chaque
 // modification dans le CMS (revalidatePublicPages).
@@ -17,12 +18,14 @@ export const revalidate = 300;
 
 async function loadInitialData() {
   try {
-    const [projects, certs] = await Promise.all([
+    const [projects, certs, siteContent] = await Promise.all([
       // Projets du CMS uniquement : rapide, et présents dans le HTML pour Google.
       getMergedProjects({ skipGithub: true, forPublic: true }),
       getCertifications(),
+      getPublicSiteContent(),
     ]);
     return {
+      hero: siteContent?.hero,
       projects,
       certifications: (certs || [])
         .filter((c: { visible?: boolean }) => c.visible !== false)
@@ -33,18 +36,18 @@ async function loadInitialData() {
     };
   } catch (e) {
     console.error("Chargement initial de la page :", e);
-    return { projects: [], certifications: [] };
+    return { hero: undefined, projects: [], certifications: [] };
   }
 }
 
 export default async function Home() {
-  const { projects, certifications } = await loadInitialData();
+  const { hero, projects, certifications } = await loadInitialData();
 
   return (
     <ModernPreloader>
       <main className="relative min-h-screen bg-void overflow-x-hidden">
         <PremiumNav />
-        <ModernHeroSection />
+        <ModernHeroSection initialHero={hero} />
         <ModernProjectSection initialProjects={projects} />
         <AchievementsSection />
         <ModernAboutSection initialCertifications={certifications} />

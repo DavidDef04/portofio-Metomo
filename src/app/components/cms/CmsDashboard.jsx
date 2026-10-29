@@ -673,6 +673,51 @@ export default function CmsDashboard() {
             </div>
 
             <div>
+              <label className="label-mono !text-[0.6rem] block mb-1">
+                Photo de profil (portrait, idéalement 4:5 — 1200 × 1500 px)
+              </label>
+              <div className="flex flex-wrap items-start gap-4 mb-2">
+                <div className="w-24 aspect-[4/5] bg-elevated overflow-hidden border border-border shrink-0">
+                  <img
+                    src={heroForm.photoUrl || "/images/image.png"}
+                    alt="Aperçu de la photo de profil"
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="btn-premium btn-premium--ghost cursor-pointer text-xs">
+                    {uploading ? "…" : "Changer la photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      disabled={uploading}
+                      onChange={(e) =>
+                        uploadFile(e, {
+                          previousPath: heroForm.photoUrl || "",
+                          onPath: (path) =>
+                            setHeroForm((prev) => ({ ...prev, photoUrl: path })),
+                        })
+                      }
+                    />
+                  </label>
+                  <p className="text-mist text-xs max-w-xs">
+                    Après le téléversement, cliquez sur « Enregistrer » en bas du
+                    formulaire pour publier la nouvelle photo.
+                  </p>
+                </div>
+              </div>
+              <input
+                className={inputClass}
+                placeholder="/images/image.png"
+                value={heroForm.photoUrl || ""}
+                onChange={(e) =>
+                  setHeroForm({ ...heroForm, photoUrl: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
               <label className="label-mono !text-[0.6rem] block mb-1">CV (PDF)</label>
               <div className="flex flex-wrap gap-3 mb-2">
                 <label className="btn-premium btn-premium--ghost cursor-pointer text-xs">

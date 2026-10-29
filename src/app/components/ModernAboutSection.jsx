@@ -76,7 +76,6 @@ const ModernAboutSection = forwardRef(
         "Vercel · Coolify · VPS",
         "Git · GitHub Actions",
         "SEO & référencement",
-        "FileZilla / FTP",
         "n8n",
         "IA générative (API LLM)",
       ],
@@ -96,7 +95,7 @@ const ModernAboutSection = forwardRef(
     },
     {
       title: "Systèmes",
-      items: ["Linux", "Windows Server", "Administration système"],
+      items: ["Windows Server", "Administration système", "Réseaux (TCP/IP)"],
     },
   ];
 
