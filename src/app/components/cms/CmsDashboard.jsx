@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
+import StatsPanel from "./StatsPanel";
 
 async function parseCmsResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -49,6 +50,7 @@ const emptyExperience = {
 };
 
 const NAV_ITEMS = [
+  ["stats", "Statistiques"],
   ["about", "Section Expertise"],
   ["hero", "Hero (accueil)"],
   ["parcours", "Parcours pro"],
@@ -59,7 +61,7 @@ const NAV_ITEMS = [
 
 export default function CmsDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState("about");
+  const [tab, setTab] = useState("stats");
   const [navOpen, setNavOpen] = useState(false);
   const [manual, setManual] = useState([]);
   const [github, setGithub] = useState([]);
@@ -103,6 +105,7 @@ export default function CmsDashboard() {
       setHeroForm({
         ...hero,
         rolesText: (hero.roles || []).join("\n"),
+        rolesText_en: (hero.roles_en || []).join("\n"),
       });
       setAboutForm(about || DEFAULT_SITE_CONTENT.about);
       setExperiences(exps || []);
@@ -265,17 +268,17 @@ export default function CmsDashboard() {
     if (!heroForm) return;
     setSaving("hero");
     try {
-      const { rolesText, roles: _roles, ...heroFields } = heroForm;
+      const { rolesText, rolesText_en, roles: _roles, roles_en: _rolesEn, ...heroFields } = heroForm;
+      const toLines = (txt) =>
+        (txt || "").split("\n").map((r) => r.trim()).filter(Boolean);
       const res = await fetch("/api/cms/site-content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hero: {
             ...heroFields,
-            roles: (rolesText || "")
-              .split("\n")
-              .map((r) => r.trim())
-              .filter(Boolean),
+            roles: toLines(rolesText),
+            roles_en: toLines(rolesText_en),
           },
         }),
         cache: "no-store",
@@ -285,6 +288,7 @@ export default function CmsDashboard() {
       setHeroForm({
         ...h,
         rolesText: (h.roles || []).join("\n"),
+        rolesText_en: (h.roles_en || []).join("\n"),
       });
       showToast(
         "success",
@@ -318,8 +322,13 @@ export default function CmsDashboard() {
         technologies: expForm.technologies
           ? expForm.technologies.split(",").map((t) => t.trim()).filter(Boolean)
           : [],
+        technologies_en: (expForm.technologiesText_en || "")
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
         order: Number(expForm.order) || 100,
       };
+      delete item.technologiesText_en;
       let next;
       if (editingExpId) {
         next = experiences.map((x) =>
@@ -522,6 +531,8 @@ export default function CmsDashboard() {
           </div>
         )}
 
+        {tab === "stats" && <StatsPanel />}
+
         {tab === "about" && aboutForm && (
           <form
             onSubmit={saveAbout}
@@ -592,6 +603,18 @@ export default function CmsDashboard() {
                 }
               />
             </div>
+
+            <EnFields
+              inputClass={inputClass}
+              value={aboutForm}
+              onChange={setAboutForm}
+              fields={[
+                ["sectionLabel_en", "Petit label", "input", "Expertise"],
+                ["sectionTitle_en", "Titre — ligne 1", "input", "What I can do"],
+                ["sectionTitleAccent_en", "Titre — accent", "input", "and what I'm learning"],
+                ["sectionDescription_en", "Description", "textarea"],
+              ]}
+            />
 
             <button
               type="submit"
@@ -804,6 +827,22 @@ export default function CmsDashboard() {
               </p>
             </div>
 
+            <EnFields
+              inputClass={inputClass}
+              value={heroForm}
+              onChange={setHeroForm}
+              fields={[
+                ["eyebrow_en", "Sous-titre", "input", "Douala, Cameroon — Full-stack developer & cybersecurity"],
+                ["rolesText_en", "Phrases rotatives (une par ligne)", "textarea"],
+                ["intro_en", "Introduction", "textarea"],
+                ["availabilityText_en", "Texte de la pastille « disponible »", "input", "Available for projects"],
+                ["statusLabel_en", "Encadré photo — titre", "input", "Currently"],
+                ["statusText_en", "Encadré photo — texte", "input"],
+                ["whatsappCta_en", "Bouton WhatsApp", "input", "Chat on WhatsApp"],
+                ["cvLabel_en", "Bouton CV", "input", "Download resume"],
+              ]}
+            />
+
             <div>
               <label className="label-mono !text-[0.6rem] block mb-1">
                 Texte bouton WhatsApp
@@ -936,7 +975,19 @@ export default function CmsDashboard() {
                 Visible sur le site
               </label>
               <div className="flex gap-2">
-                <button
+                <EnFields
+                inputClass={inputClass}
+                value={expForm}
+                onChange={setExpForm}
+                fields={[
+                  ["title_en", "Intitulé", "input"],
+                  ["company_en", "Entreprise (si différente)", "input"],
+                  ["period_en", "Période", "input", "Sep 2025 — Present"],
+                  ["description_en", "Description", "textarea"],
+                  ["technologiesText_en", "Technologies (virgules)", "input"],
+                ]}
+              />
+              <button
                   type="submit"
                   disabled={saving === "experience"}
                   className="btn-premium btn-premium--primary disabled:opacity-50"
@@ -978,6 +1029,7 @@ export default function CmsDashboard() {
                         setExpForm({
                           ...exp,
                           technologies: (exp.technologies || []).join(", "),
+                          technologiesText_en: (exp.technologies_en || []).join(", "),
                         });
                       }}
                     >
@@ -1124,7 +1176,16 @@ export default function CmsDashboard() {
                 </label>
               </div>
               <div className="flex gap-2">
-                <button
+                <EnFields
+                inputClass={inputClass}
+                value={form}
+                onChange={setForm}
+                fields={[
+                  ["title_en", "Titre (si différent)", "input"],
+                  ["description_en", "Description", "textarea"],
+                ]}
+              />
+              <button
                   type="submit"
                   disabled={saving === "project"}
                   className="btn-premium btn-premium--primary disabled:opacity-50"
@@ -1283,6 +1344,17 @@ export default function CmsDashboard() {
                 />
                 Visible sur le site
               </label>
+              <EnFields
+                inputClass={inputClass}
+                value={certForm}
+                onChange={setCertForm}
+                fields={[
+                  ["name_en", "Nom", "input"],
+                  ["issuer_en", "Organisme", "input"],
+                  ["date_en", "Date", "input", "Oct 2026"],
+                  ["description_en", "Description", "textarea"],
+                ]}
+              />
               <button
                 type="submit"
                 disabled={saving === "cert"}
@@ -1342,6 +1414,8 @@ function GithubRow({ project: p, onToggle, inputClass }) {
     title: p.overrides?.title || "",
     liveUrl: p.overrides?.liveUrl || "",
     description: p.overrides?.description || "",
+    title_en: p.overrides?.title_en || "",
+    description_en: p.overrides?.description_en || "",
     order: p.order ?? 500,
   });
   const [busy, setBusy] = useState(false);
@@ -1456,6 +1530,15 @@ function GithubRow({ project: p, onToggle, inputClass }) {
               onChange={(e) => setDraft({ ...draft, order: e.target.value })}
             />
           </div>
+          <EnFields
+            inputClass={inputClass}
+            value={draft}
+            onChange={setDraft}
+            fields={[
+              ["title_en", "Titre affiché", "input"],
+              ["description_en", "Description affichée", "textarea"],
+            ]}
+          />
           <button
             type="submit"
             disabled={busy}
@@ -1466,5 +1549,47 @@ function GithubRow({ project: p, onToggle, inputClass }) {
         </form>
       )}
     </div>
+  );
+}
+
+/* Bloc repliable « Version anglaise » : champs suffixés _en, affichés sur
+   la page /en. Vide = le texte français est repris. */
+function EnFields({ value, onChange, fields, inputClass }) {
+  const filled = fields.filter(([k]) => (value?.[k] || "").toString().trim()).length;
+  return (
+    <details className="border border-border p-4 group" style={{ borderRadius: "var(--radius-cut)" }}>
+      <summary className="cursor-pointer text-sm text-bone flex items-center justify-between gap-3">
+        <span>Version anglaise (EN)</span>
+        <span className="text-xs text-mist">
+          {filled}/{fields.length} renseigné{filled > 1 ? "s" : ""}
+        </span>
+      </summary>
+      <div className="mt-4 space-y-3">
+        <p className="text-mist text-xs">
+          Affiché sur la version anglaise du site. Un champ vide reprend le texte français.
+        </p>
+        {fields.map(([key, label, kind, placeholder]) => (
+          <div key={key}>
+            <label className="label-mono !text-[0.6rem] block mb-1">{label}</label>
+            {kind === "textarea" ? (
+              <textarea
+                className={`${inputClass} resize-y`}
+                rows={key.startsWith("rolesText") ? 4 : 3}
+                placeholder={placeholder}
+                value={value?.[key] || ""}
+                onChange={(e) => onChange({ ...value, [key]: e.target.value })}
+              />
+            ) : (
+              <input
+                className={inputClass}
+                placeholder={placeholder}
+                value={value?.[key] || ""}
+                onChange={(e) => onChange({ ...value, [key]: e.target.value })}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </details>
   );
 }

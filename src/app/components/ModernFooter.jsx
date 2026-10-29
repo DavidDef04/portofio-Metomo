@@ -1,9 +1,12 @@
 "use client";
 import React from "react";
 import { whatsappLink, EMAIL } from "@/config/contact";
+import { getDict } from "@/lib/i18n";
 
-const ModernFooter = () => {
+const ModernFooter = ({ lang = "fr" }) => {
   const year = new Date().getFullYear();
+  const d = getDict(lang);
+  const t = d.footer;
 
   return (
     <footer className="border-t border-border mt-8">
@@ -14,27 +17,26 @@ const ModernFooter = () => {
               METOMO<span className="text-champagne">.</span>
             </p>
             <p className="text-mist text-sm max-w-sm leading-relaxed">
-              Développeur full-stack — sites web, SEO, déploiement et
-              automatisation. Basé à Douala.
+              {t.tagline}
             </p>
             <a
-              href={whatsappLink()}
+              href={whatsappLink(d.misc.whatsappMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block mt-4 text-sm text-[#25D366] hover:underline"
             >
-              Contacter sur WhatsApp →
+              {t.whatsapp}
             </a>
           </div>
 
-          <nav aria-label="Navigation pied de page">
-            <p className="label-mono mb-4">Navigation</p>
+          <nav aria-label={t.footerNav}>
+            <p className="label-mono mb-4">{t.navigation}</p>
             <ul className="space-y-2 text-sm">
               {[
-                ["#home", "Accueil"],
-                ["#projects", "Travaux"],
-                ["#about", "Expertise"],
-                ["#contact", "Contact"],
+                ["#home", d.nav.home],
+                ["#projects", d.nav.projects],
+                ["#about", d.nav.about],
+                ["#contact", d.nav.contact],
               ].map(([href, label]) => (
                 <li key={href}>
                   <a href={href} className="text-mist hover:text-champagne transition-colors">
@@ -46,9 +48,9 @@ const ModernFooter = () => {
           </nav>
 
           <div>
-            <p className="label-mono mb-4">Stack actuelle</p>
+            <p className="label-mono mb-4">{t.stack}</p>
             <p className="text-mist text-sm leading-loose">
-              Django · Laravel · JavaScript · SQL · Next.js · Astro . HTML · CSS · Tailwind · n8n
+              TypeScript · Next.js · NestJS · Prisma · PostgreSQL · Laravel · Django · Docker · Astro
             </p>
             <a
               href={`mailto:${EMAIL}`}
@@ -60,9 +62,9 @@ const ModernFooter = () => {
         </div>
 
         <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row justify-between gap-4 text-mist text-xs">
-          <p>© {year} David René METOMO. Tous droits réservés.</p>
+          <p>© {year} David René METOMO. {t.rights}</p>
           <p className="label-mono !text-[0.6rem]">
-            Douala, Cameroun
+            {t.location}
           </p>
         </div>
       </div>

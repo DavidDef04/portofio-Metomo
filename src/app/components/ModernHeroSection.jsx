@@ -14,6 +14,7 @@ import { ease, fadeUp, staggerContainer } from "@/lib/motion";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 import AmbientBackground from "./ui/AmbientBackground";
 import { whatsappLink, EMAIL } from "@/config/contact";
+import { getDict } from "@/lib/i18n";
 
 const socialLinkMotion = {
   hidden: { opacity: 0, y: 16, scale: 0.96 },
@@ -25,8 +26,9 @@ const socialLinkMotion = {
   }),
 };
 
-/** @param {{ initialHero?: any }} props */
-const ModernHeroSection = ({ initialHero }) => {
+/** @param {{ initialHero?: any, lang?: "fr" | "en" }} props */
+const ModernHeroSection = ({ initialHero, lang = "fr" }) => {
+  const t = getDict(lang);
   // Contenu du CMS fourni par le serveur : pas de saut de texte ni de photo
   // au chargement, et textes réels visibles par Google.
   const [hero, setHero] = useState(() => initialHero || DEFAULT_SITE_CONTENT.hero);
@@ -49,15 +51,21 @@ const ModernHeroSection = ({ initialHero }) => {
   const available = hero.available !== false;
 
   const loadHero = useCallback(() => {
-    fetch("/api/site-content", { cache: "no-store" })
+    fetch(`/api/site-content?lang=${lang}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d.success && d.hero) setHero(d.hero);
       })
       .catch(() => {});
-  }, []);
+  }, [lang]);
 
   useRefetchOnFocus(loadHero);
+
+  // En anglais, le bouton principal télécharge le CV anglais ; le lien
+  // secondaire propose l'autre langue.
+  const primaryCv = lang === "en" && hero.cvEnUrl ? hero.cvEnUrl : hero.cvUrl;
+  const secondaryCv = lang === "en" ? hero.cvUrl : hero.cvEnUrl;
+  const waLink = whatsappLink(t.misc.whatsappMessage);
 
   useEffect(() => {
     const t = setInterval(
@@ -71,7 +79,7 @@ const ModernHeroSection = ({ initialHero }) => {
     () => [
       {
         label: "WhatsApp",
-        href: whatsappLink(),
+        href: waLink,
         external: true,
         icon: FaWhatsapp,
         variant: "whatsapp",
@@ -98,7 +106,7 @@ const ModernHeroSection = ({ initialHero }) => {
         variant: "default",
       },
     ],
-    [hero.social]
+    [hero.social, waLink]
   );
 
   return (
@@ -125,7 +133,7 @@ const ModernHeroSection = ({ initialHero }) => {
                 custom={0}
               >
                 <span className="availability-dot" aria-hidden />
-                {hero.availabilityText || "Disponible pour des missions"}
+                {hero.availabilityText || (lang === "en" ? "Available for projects" : "Disponible pour des missions")}
               </motion.p>
             )}
             <motion.p className="label-mono mb-6" variants={fadeUp} custom={0}>
@@ -175,7 +183,7 @@ const ModernHeroSection = ({ initialHero }) => {
               custom={4}
             >
               <a
-                href={whatsappLink()}
+                href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-premium btn-premium--primary"
@@ -183,7 +191,7 @@ const ModernHeroSection = ({ initialHero }) => {
                 {hero.whatsappCta}
               </a>
               <a
-                href={hero.cvUrl}
+                href={primaryCv}
                 download
                 className="btn-premium btn-premium--ghost"
               >
@@ -196,23 +204,23 @@ const ModernHeroSection = ({ initialHero }) => {
               variants={fadeUp}
               custom={4}
             >
-              Hors du Cameroun ? Écrivez-moi :{" "}
+              {t.hero.abroad}{" "}
               <a
                 href={`mailto:${emailAddress}`}
                 className="text-bone underline decoration-champagne/50 underline-offset-4 hover:text-champagne transition-colors"
               >
                 {emailAddress}
               </a>
-              {hero.cvEnUrl && (
+              {secondaryCv && (
                 <>
                   {" · "}
                   <a
-                    href={hero.cvEnUrl}
+                    href={secondaryCv}
                     download
-                    lang="en"
+                    lang={lang === "en" ? "fr" : "en"}
                     className="text-bone underline decoration-champagne/50 underline-offset-4 hover:text-champagne transition-colors"
                   >
-                    {hero.cvEnLabel || "English resume"}
+                    {t.hero.otherCv}
                   </a>
                 </>
               )}
@@ -267,7 +275,7 @@ const ModernHeroSection = ({ initialHero }) => {
                 <Image
                   src={hero.photoUrl || "/images/image.png"}
                   unoptimized={(hero.photoUrl || "").startsWith("/api/")}
-                  alt={`${hero.nameLine1} ${hero.nameHighlight} — Développeur full-stack`}
+                  alt={`${hero.nameLine1} ${hero.nameHighlight} — ${t.hero.photoAlt}`}
                   fill
                   priority
                   sizes="(max-width: 1024px) 90vw, 45vw"
@@ -297,7 +305,7 @@ const ModernHeroSection = ({ initialHero }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
         >
-          <span>Voir les projets</span>
+          <span>{t.hero.scroll}</span>
           <motion.span
             className="block w-px h-8 bg-gradient-to-b from-champagne/50 to-transparent"
             animate={{ scaleY: [1, 0.6, 1] }}

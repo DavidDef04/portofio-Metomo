@@ -5,8 +5,9 @@ import { FaGithub, FaArrowRight, FaLock } from "react-icons/fa";
 import SectionHeader from "./ui/SectionHeader";
 import AmbientBackground from "./ui/AmbientBackground";
 import { fadeUp } from "@/lib/motion";
+import { getDict, categoryLabel } from "@/lib/i18n";
 
-const ALL = "Tous";
+const ALL = "__all__";
 const CATEGORY_ORDER = ["Web", "Mobile", "Cybersécurité", "IA"];
 const OTHERS_PREVIEW = 6;
 const FULL_TIMEOUT_MS = 60_000;
@@ -32,7 +33,7 @@ function hostOf(url) {
 }
 
 /* ─── Visuel : capture du projet, ou composition typographique ─── */
-function ProjectVisual({ project, index, large = false }) {
+function ProjectVisual({ project, index, large = false, t, lang }) {
   const [broken, setBroken] = useState(false);
   const hasImage = project.image && !broken;
 
@@ -45,7 +46,7 @@ function ProjectVisual({ project, index, large = false }) {
       {hasImage ? (
         <img
           src={project.image}
-          alt={`Aperçu du projet ${project.title}`}
+          alt={t.preview(project.title)}
           loading={index < 2 ? "eager" : "lazy"}
           decoding="async"
           className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
@@ -53,7 +54,7 @@ function ProjectVisual({ project, index, large = false }) {
         />
       ) : (
         <div className="project-visual-fallback absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-          <span className="label-mono !text-[0.6rem] mb-3">{project.category}</span>
+          <span className="label-mono !text-[0.6rem] mb-3">{categoryLabel(project.category, lang)}</span>
           <span
             className={`font-display font-semibold text-bone/90 leading-none ${
               large ? "text-4xl md:text-6xl" : "text-2xl"
@@ -87,7 +88,7 @@ function TechList({ items = [], max }) {
 }
 
 /* ─── Projet en vedette : étude de cas ─── */
-function FeaturedProject({ project, index }) {
+function FeaturedProject({ project, index, t, lang }) {
   const live = liveLink(project);
   const code = codeLink(project);
   const reversed = index % 2 === 1;
@@ -103,18 +104,18 @@ function FeaturedProject({ project, index }) {
       <div className={`lg:col-span-7 ${reversed ? "lg:order-2" : ""}`}>
         <div className="clip-chamfer border border-border">
           {live ? (
-            <a href={live} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${project.title}`}>
-              <ProjectVisual project={project} index={index} large />
+            <a href={live} target="_blank" rel="noopener noreferrer" aria-label={t.open(project.title)}>
+              <ProjectVisual project={project} index={index} large t={t} lang={lang} />
             </a>
           ) : (
-            <ProjectVisual project={project} index={index} large />
+            <ProjectVisual project={project} index={index} large t={t} lang={lang} />
           )}
         </div>
       </div>
 
       <div className={`lg:col-span-5 ${reversed ? "lg:order-1" : ""}`}>
         <p className="label-mono !text-[0.6rem] mb-4">
-          {String(index + 1).padStart(2, "0")} — {project.category}
+          {String(index + 1).padStart(2, "0")} — {categoryLabel(project.category, lang)}
         </p>
         <h3 className="font-display text-h2 text-bone font-semibold mb-5">
           {project.title}
@@ -133,7 +134,7 @@ function FeaturedProject({ project, index }) {
               rel="noopener noreferrer"
               className="btn-premium btn-premium--primary"
             >
-              Voir le site
+              {t.visit}
               <FaArrowRight className="text-[0.7rem]" aria-hidden />
             </a>
           )}
@@ -144,13 +145,13 @@ function FeaturedProject({ project, index }) {
               rel="noopener noreferrer"
               className="btn-premium btn-premium--ghost"
             >
-              <FaGithub aria-hidden /> Code source
+              <FaGithub aria-hidden /> {t.code}
             </a>
           )}
           {!code && project.private && (
             <span className="flex items-center gap-2 text-xs text-mist">
               <FaLock className="text-champagne text-[10px]" aria-hidden />
-              Code privé (projet client)
+              {t.privateCode}
             </span>
           )}
           {live && (
@@ -163,14 +164,14 @@ function FeaturedProject({ project, index }) {
 }
 
 /* ─── Autres travaux : carte compacte, sans image ─── */
-function OtherProject({ project }) {
+function OtherProject({ project, t, lang }) {
   const live = liveLink(project);
   const code = codeLink(project);
   const href = live || code;
 
   return (
     <article className="surface-card !rounded-none p-6 flex flex-col h-full">
-      <p className="label-mono !text-[0.55rem] mb-3">{project.category}</p>
+      <p className="label-mono !text-[0.55rem] mb-3">{categoryLabel(project.category, lang)}</p>
       <h4 className="font-display text-lg text-bone font-semibold mb-2">
         {href ? (
           <a
@@ -197,13 +198,13 @@ function OtherProject({ project }) {
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-bone transition-colors"
-              aria-label={`Code source de ${project.title}`}
+              aria-label={t.codeOf(project.title)}
             >
               <FaGithub />
             </a>
           )}
           {!code && project.private && (
-            <FaLock className="text-[10px] text-champagne/70" title="Dépôt privé" aria-label="Dépôt privé" />
+            <FaLock className="text-[10px] text-champagne/70" title={t.privateRepo} aria-label={t.privateRepo} />
           )}
           {live && (
             <a
@@ -211,7 +212,7 @@ function OtherProject({ project }) {
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-champagne transition-colors"
-              aria-label={`Voir ${project.title} en ligne`}
+              aria-label={t.liveOf(project.title)}
             >
               <FaArrowRight className="text-xs" />
             </a>
@@ -222,8 +223,9 @@ function OtherProject({ project }) {
   );
 }
 
-/** @param {{ initialProjects?: any[] }} props */
-export default function ModernProjectSection({ initialProjects }) {
+/** @param {{ initialProjects?: any[], lang?: "fr" | "en" }} props */
+export default function ModernProjectSection({ initialProjects, lang = "fr" }) {
+  const t = getDict(lang).projects;
   const [projects, setProjects] = useState(() => initialProjects || []);
   const [loading, setLoading] = useState(() => !initialProjects?.length);
   const [category, setCategory] = useState(ALL);
@@ -234,7 +236,7 @@ export default function ModernProjectSection({ initialProjects }) {
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FULL_TIMEOUT_MS);
-    fetch("/api/projects", { signal: controller.signal })
+    fetch(`/api/projects?lang=${lang}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.success && Array.isArray(data.projects)) setProjects(data.projects);
@@ -248,7 +250,7 @@ export default function ModernProjectSection({ initialProjects }) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, []);
+  }, [lang]);
 
   const featured = useMemo(() => projects.filter((p) => p.featured), [projects]);
   const others = useMemo(() => projects.filter((p) => !p.featured), [projects]);
@@ -268,10 +270,10 @@ export default function ModernProjectSection({ initialProjects }) {
     <section id="projects" className="section-shell relative">
       <AmbientBackground />
       <SectionHeader
-        label="Réalisations"
-        title="Projets"
-        titleAccent="sélectionnés"
-        description="Des plateformes complètes en production, de l'API au déploiement, et des travaux pratiques en cybersécurité."
+        label={t.label}
+        title={t.title}
+        titleAccent={t.accent}
+        description={t.description}
       />
 
       {loading && featured.length === 0 && (
@@ -289,7 +291,7 @@ export default function ModernProjectSection({ initialProjects }) {
       {featured.length > 0 && (
         <div className="space-y-24 md:space-y-32">
           {featured.map((p, i) => (
-            <FeaturedProject key={p.id} project={p} index={i} />
+            <FeaturedProject key={p.id} project={p} index={i} t={t} lang={lang} />
           ))}
         </div>
       )}
@@ -298,13 +300,13 @@ export default function ModernProjectSection({ initialProjects }) {
         <div className="mt-28 md:mt-36">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
             <div>
-              <p className="label-mono mb-3">Archives</p>
+              <p className="label-mono mb-3">{t.archives}</p>
               <h3 className="font-display text-h3 text-bone font-semibold">
-                Autres travaux
+                {t.others}
               </h3>
             </div>
             {categories.length > 2 && (
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par catégorie">
+              <div className="flex flex-wrap gap-2" role="group" aria-label={t.filter}>
                 {categories.map((cat) => (
                   <button
                     key={cat}
@@ -321,7 +323,7 @@ export default function ModernProjectSection({ initialProjects }) {
                     }`}
                     style={{ borderRadius: "var(--radius-cut)" }}
                   >
-                    {cat}
+                    {cat === ALL ? t.all : categoryLabel(cat, lang)}
                   </button>
                 ))}
               </div>
@@ -330,7 +332,7 @@ export default function ModernProjectSection({ initialProjects }) {
 
           <div className="grid gap-px bg-border md:grid-cols-2 lg:grid-cols-3">
             {visibleOthers.map((p) => (
-              <OtherProject key={p.id} project={p} />
+              <OtherProject key={p.id} project={p} t={t} lang={lang} />
             ))}
           </div>
 
@@ -341,9 +343,7 @@ export default function ModernProjectSection({ initialProjects }) {
                 onClick={() => setShowAllOthers((v) => !v)}
                 className="btn-premium btn-premium--ghost"
               >
-                {showAllOthers
-                  ? "Réduire"
-                  : `Voir les ${filteredOthers.length} travaux`}
+                {showAllOthers ? t.showLess : t.showAll(filteredOthers.length)}
               </button>
             </div>
           )}
@@ -352,7 +352,7 @@ export default function ModernProjectSection({ initialProjects }) {
 
       {!loading && projects.length === 0 && (
         <p className="text-center text-mist py-16">
-          Les projets arrivent bientôt.
+          {t.empty}
         </p>
       )}
 
@@ -363,7 +363,7 @@ export default function ModernProjectSection({ initialProjects }) {
           rel="noopener noreferrer"
           className="btn-premium btn-premium--ghost"
         >
-          <FaGithub aria-hidden /> Tout mon GitHub
+          <FaGithub aria-hidden /> {t.github}
         </a>
       </div>
     </section>

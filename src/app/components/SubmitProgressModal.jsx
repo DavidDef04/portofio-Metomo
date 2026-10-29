@@ -1,16 +1,12 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
+import { getDict } from "@/lib/i18n";
 
-const STEPS = {
-  idle: { label: "", progress: 0 },
-  validating: { label: "Vérification de sécurité…", progress: 25 },
-  sending: { label: "Envoi du message…", progress: 65 },
-  success: { label: "Message envoyé avec succès", progress: 100 },
-  error: { label: "Échec de l'envoi", progress: 100 },
-};
+const PROGRESS = { idle: 0, validating: 25, sending: 65, success: 100, error: 100 };
 
-export default function SubmitProgressModal({ open, stage, errorMessage }) {
-  const step = STEPS[stage] || STEPS.idle;
+export default function SubmitProgressModal({ open, stage, errorMessage, lang = "fr" }) {
+  const t = getDict(lang).modal;
+  const step = { label: t[stage] || "", progress: PROGRESS[stage] ?? 0 };
   const isError = stage === "error";
 
   return (
@@ -32,7 +28,7 @@ export default function SubmitProgressModal({ open, stage, errorMessage }) {
             exit={{ scale: 0.95, opacity: 0 }}
           >
             <p id="submit-modal-title" className="label-mono mb-2">
-              {isError ? "Erreur" : "Envoi en cours"}
+              {isError ? t.errorTitle : t.sendingTitle}
             </p>
             <p
               className={`font-display text-xl mb-6 ${

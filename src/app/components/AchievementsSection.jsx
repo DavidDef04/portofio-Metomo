@@ -3,36 +3,20 @@ import React from "react";
 import { motion } from "framer-motion";
 import SectionHeader from "./ui/SectionHeader";
 import { fadeUp, staggerContainer } from "@/lib/motion";
+import { getDict } from "@/lib/i18n";
 
-/**
- * Trois repères concrets, vérifiables, plutôt que des compteurs génériques.
- * À mettre à jour ici quand le parcours évolue.
- */
-const MILESTONES = [
-  {
-    value: "4",
-    label: "Plateformes en production",
-    detail: "Caisse SaaS, formation en ligne, e-commerce, outil IA",
-  },
-  {
-    value: "Google",
-    label: "Certifié Cybersecurity",
-    detail: "Certificat professionnel, 2026",
-  },
-  {
-    value: "2023",
-    label: "Début du parcours",
-    detail: "Développement et sécurité, en continu depuis",
-  },
-];
+// Repères (textes dans lib/i18n.js → achievements.items), à mettre à jour
+// quand le parcours évolue.
 
-const AchievementsSection = () => (
+const AchievementsSection = ({ lang = "fr" }) => {
+  const t = getDict(lang).achievements;
+  return (
   <section id="achievements" className="section-shell relative">
     <SectionHeader
-      label="En chiffres"
-      title="Le parcours"
-      titleAccent="en quelques repères"
-      description="Ce que j'ai livré, ce que j'ai validé, et depuis quand."
+      label={t.label}
+      title={t.title}
+      titleAccent={t.accent}
+      description={t.description}
       align="center"
     />
 
@@ -43,7 +27,7 @@ const AchievementsSection = () => (
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
     >
-      {MILESTONES.map((m, i) => (
+      {t.items.map((m, i) => (
         <motion.div
           key={m.label}
           variants={fadeUp}
@@ -59,6 +43,7 @@ const AchievementsSection = () => (
       ))}
     </motion.div>
   </section>
-);
+  );
+};
 
 export default AchievementsSection;

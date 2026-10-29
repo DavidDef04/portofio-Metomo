@@ -6,6 +6,8 @@ import AmbientBackground from "./ui/AmbientBackground";
 import SubmitProgressModal from "./SubmitProgressModal";
 import { whatsappLink, EMAIL, PHONE_DISPLAY } from "@/config/contact";
 import { FaEnvelope } from "react-icons/fa";
+import { getDict } from "@/lib/i18n";
+import { track } from "@/lib/track";
 
 const Turnstile = dynamic(
   () => import("@marsidev/react-turnstile").then((m) => m.Turnstile),
@@ -24,7 +26,9 @@ const INITIAL_FORM = {
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-const ModernEmailSection = () => {
+const ModernEmailSection = ({ lang = "fr" }) => {
+  const t = getDict(lang).contact;
+  const waLink = whatsappLink(getDict(lang).misc.whatsappMessage);
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileKey, setTurnstileKey] = useState(0);
@@ -74,12 +78,13 @@ const ModernEmailSection = () => {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        track("contact_form_sent", { page_lang: lang });
         setModalStage("success");
         await new Promise((r) => setTimeout(r, 1400));
         setModalOpen(false);
         resetForm();
       } else {
-        setModalError(data.error || "Erreur lors de l'envoi.");
+        setModalError(data.error || t.sendError);
         setModalStage("error");
         await new Promise((r) => setTimeout(r, 2500));
         setModalOpen(false);
@@ -87,7 +92,7 @@ const ModernEmailSection = () => {
         setTurnstileToken("");
       }
     } catch {
-      setModalError("Erreur de connexion.");
+      setModalError(t.networkError);
       setModalStage("error");
       await new Promise((r) => setTimeout(r, 2500));
       setModalOpen(false);
@@ -102,22 +107,23 @@ const ModernEmailSection = () => {
     <section id="contact" className="section-shell relative">
       <AmbientBackground />
       <SubmitProgressModal
+        lang={lang}
         open={modalOpen}
         stage={modalStage}
         errorMessage={modalError}
       />
 
       <SectionHeader
-        label="Contact"
-        title="Parlons de"
-        titleAccent="votre projet"
-        description="WhatsApp pour un échange rapide depuis le Cameroun, e-mail pour les clients à l'international. Je réponds sur les deux canaux."
+        label={t.label}
+        title={t.title}
+        titleAccent={t.accent}
+        description={t.description}
         align="center"
       />
 
       <div className="max-w-5xl mx-auto mb-10 grid md:grid-cols-2 gap-4">
         <a
-          href={whatsappLink()}
+          href={waLink}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-5 p-7 border border-[#25D366]/35 bg-[#25D366]/[0.07] hover:bg-[#25D366]/[0.12] transition-colors group"
@@ -129,14 +135,14 @@ const ModernEmailSection = () => {
             </svg>
           </span>
           <span className="min-w-0">
-            <span className="label-mono !text-[0.6rem] block mb-1">Cameroun · WhatsApp</span>
+            <span className="label-mono !text-[0.6rem] block mb-1">{t.whatsappTag}</span>
             <span className="block font-display text-lg text-bone font-semibold group-hover:text-[#25D366] transition-colors">
               {PHONE_DISPLAY}
             </span>
           </span>
         </a>
         <a
-          href={`mailto:${EMAIL}?subject=${encodeURIComponent("Projet / collaboration")}`}
+          href={`mailto:${EMAIL}?subject=${encodeURIComponent(t.emailSubject)}`}
           className="flex items-center gap-5 p-7 border border-champagne/35 bg-champagne/[0.06] hover:bg-champagne/[0.1] transition-colors group"
           style={{ borderRadius: "var(--radius-md)" }}
         >
@@ -144,7 +150,7 @@ const ModernEmailSection = () => {
             <FaEnvelope className="w-5 h-5" aria-hidden />
           </span>
           <span className="min-w-0">
-            <span className="label-mono !text-[0.6rem] block mb-1">International · E-mail</span>
+            <span className="label-mono !text-[0.6rem] block mb-1">{t.emailTag}</span>
             <span className="block font-display text-lg text-bone font-semibold group-hover:text-champagne transition-colors break-all">
               {EMAIL}
             </span>
@@ -157,15 +163,14 @@ const ModernEmailSection = () => {
           {!showEmailForm ? (
             <div className="surface-card p-8 md:p-10 text-center">
               <p className="text-mist text-sm mb-6 leading-relaxed">
-                Vous préférez écrire directement ici ? Le formulaire m'envoie
-                votre message par e-mail.
+                {t.formIntro}
               </p>
               <button
                 type="button"
                 onClick={() => setShowEmailForm(true)}
                 className="btn-premium btn-premium--ghost"
               >
-                Écrire un message
+                {t.openForm}
               </button>
             </div>
           ) : (
@@ -174,12 +179,12 @@ const ModernEmailSection = () => {
               className="surface-card p-8 md:p-10 space-y-5"
             >
               <p className="label-mono !text-[0.6rem] text-mist">
-                Mon numéro : {PHONE_DISPLAY} — indiquez le vôtre pour être rappelé
+                {t.myNumber(PHONE_DISPLAY)}
               </p>
 
               <div>
                 <label htmlFor="email" className="label-mono !text-[0.6rem] block mb-2">
-                  Votre email *
+                  {t.email}
                 </label>
                 <input
                   type="email"
@@ -190,13 +195,13 @@ const ModernEmailSection = () => {
                   onChange={handleChange}
                   className={inputClass}
                   style={{ borderRadius: "var(--radius-cut)" }}
-                  placeholder="vous@entreprise.com"
+                  placeholder={t.emailPh}
                 />
               </div>
 
               <div>
                 <label htmlFor="phone" className="label-mono !text-[0.6rem] block mb-2">
-                  Votre téléphone / WhatsApp (facultatif)
+                  {t.phone}
                 </label>
                 <input
                   type="tel"
@@ -206,13 +211,13 @@ const ModernEmailSection = () => {
                   onChange={handleChange}
                   className={inputClass}
                   style={{ borderRadius: "var(--radius-cut)" }}
-                  placeholder="+237 6XX XXX XXX ou +33 6 XX XX XX XX"
+                  placeholder={t.phonePh}
                 />
               </div>
 
               <div>
                 <label htmlFor="subject" className="label-mono !text-[0.6rem] block mb-2">
-                  Sujet *
+                  {t.subject}
                 </label>
                 <input
                   type="text"
@@ -224,13 +229,13 @@ const ModernEmailSection = () => {
                   onChange={handleChange}
                   className={inputClass}
                   style={{ borderRadius: "var(--radius-cut)" }}
-                  placeholder="Site web, mission…"
+                  placeholder={t.subjectPh}
                 />
               </div>
 
               <div>
                 <label htmlFor="message" className="label-mono !text-[0.6rem] block mb-2">
-                  Message *
+                  {t.message}
                 </label>
                 <textarea
                   id="message"
@@ -242,7 +247,7 @@ const ModernEmailSection = () => {
                   onChange={handleChange}
                   className={`${inputClass} resize-none`}
                   style={{ borderRadius: "var(--radius-cut)" }}
-                  placeholder="Votre message…"
+                  placeholder={t.messagePh}
                 />
               </div>
 
@@ -254,7 +259,7 @@ const ModernEmailSection = () => {
                     onSuccess={setTurnstileToken}
                     onExpire={() => setTurnstileToken("")}
                     onError={() => setTurnstileToken("")}
-                    options={{ theme: "dark", size: "normal" }}
+                    options={{ theme: "dark", size: "normal", language: lang }}
                   />
                 </div>
               ) : (
@@ -269,12 +274,12 @@ const ModernEmailSection = () => {
                 disabled={!canSubmit}
                 className="btn-premium btn-premium--primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Envoyer le message
+                {t.send}
               </button>
 
               <p className="text-mist text-xs text-center">
                 {!turnstileToken && TURNSTILE_SITE_KEY
-                  ? "Cochez la vérification anti-spam pour activer l'envoi."
+                  ? t.captchaHint
                   : null}
               </p>
             </form>

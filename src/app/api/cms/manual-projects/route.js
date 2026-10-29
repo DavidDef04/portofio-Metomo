@@ -30,6 +30,8 @@ export async function POST(req) {
       id: newId(),
       title: body.title?.trim() || "Sans titre",
       description: body.description?.trim() || "",
+      title_en: body.title_en?.trim() || "",
+      description_en: body.description_en?.trim() || "",
       image: body.image?.trim() || "",
       category: body.category || "Web",
       technologies: Array.isArray(body.technologies) ? body.technologies : [],

@@ -24,6 +24,8 @@ export async function GET() {
           title: m.title || "",
           liveUrl: m.liveUrl || "",
           description: m.description || "",
+          title_en: m.title_en || "",
+          description_en: m.description_en || "",
         },
       };
     });
@@ -50,7 +52,7 @@ export async function PUT(req) {
     if ("visible" in body) next.visible = body.visible !== false;
     if ("featured" in body) next.featured = body.featured === true;
     if ("order" in body) next.order = Number.isFinite(Number(body.order)) ? Number(body.order) : 500;
-    for (const f of ["title", "liveUrl", "description"]) {
+    for (const f of ["title", "liveUrl", "description", "title_en", "description_en"]) {
       if (typeof body[f] === "string") next[f] = body[f].trim();
     }
     meta[key] = next;

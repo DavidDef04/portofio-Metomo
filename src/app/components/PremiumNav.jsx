@@ -4,16 +4,47 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ease } from "@/lib/motion";
 import { whatsappLink } from "@/config/contact";
+import { getDict, homePath } from "@/lib/i18n";
 
-const navItems = [
-  { id: "home", label: "Accueil", href: "#home" },
-  { id: "projects", label: "Travaux", href: "#projects" },
-  { id: "achievements", label: "Repères", href: "#achievements" },
-  { id: "about", label: "Expertise", href: "#about" },
-  { id: "contact", label: "Contact", href: "#contact" },
-];
+const NAV_IDS = ["home", "projects", "achievements", "about", "contact"];
 
-export default function PremiumNav() {
+/** Sélecteur FR / EN : lien vers l'autre version, en gardant la section. */
+function LangSwitch({ lang, label, className = "" }) {
+  const switchTo = (target, e) => {
+    if (target === lang) {
+      e.preventDefault();
+      return;
+    }
+    try {
+      localStorage.setItem("metomo-lang", target);
+    } catch {
+      /* préférence non mémorisée */
+    }
+    // Conserver la section affichée (#projects…)
+    e.currentTarget.href = homePath(target) + (window.location.hash || "");
+  };
+  return (
+    <div className={`lang-switch ${className}`} role="group" aria-label={label}>
+      {["fr", "en"].map((code) => (
+        <a
+          key={code}
+          href={homePath(code)}
+          hrefLang={code}
+          lang={code}
+          aria-current={code === lang ? "true" : undefined}
+          onClick={(e) => switchTo(code, e)}
+          className={code === lang ? "is-active" : ""}
+        >
+          {code.toUpperCase()}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+export default function PremiumNav({ lang = "fr" }) {
+  const t = getDict(lang).nav;
+  const navItems = NAV_IDS.map((id) => ({ id, label: t[id], href: `#${id}` }));
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
   const [open, setOpen] = useState(false);
@@ -89,8 +120,9 @@ export default function PremiumNav() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <LangSwitch lang={lang} label={t.language} />
             <a
-              href={whatsappLink()}
+              href={whatsappLink(getDict(lang).misc.whatsappMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-premium !py-2.5 !px-5 !text-[0.7rem] !bg-[#25D366] !text-white !border-transparent hover:!brightness-110"
@@ -99,17 +131,20 @@ export default function PremiumNav() {
             </a>
           </div>
 
+          <div className="md:hidden flex items-center gap-3">
+          <LangSwitch lang={lang} label={t.language} />
           <button
             type="button"
-            className="md:hidden w-10 h-10 flex flex-col justify-center items-center gap-1.5 border border-border"
+            className="w-10 h-10 flex flex-col justify-center items-center gap-1.5 border border-border"
             style={{ borderRadius: "var(--radius-cut)" }}
             onClick={() => setOpen(!open)}
-            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-label={open ? t.closeMenu : t.openMenu}
           >
             <span className={`block w-5 h-px bg-bone transition-transform ${open ? "rotate-45 translate-y-[3.5px]" : ""}`} />
             <span className={`block w-5 h-px bg-bone transition-opacity ${open ? "opacity-0" : ""}`} />
             <span className={`block w-5 h-px bg-bone transition-transform ${open ? "-rotate-45 -translate-y-[3.5px]" : ""}`} />
           </button>
+          </div>
         </div>
       </motion.header>
 
@@ -139,7 +174,7 @@ export default function PremiumNav() {
                 </motion.div>
               ))}
               <a
-                href={whatsappLink()}
+                href={whatsappLink(getDict(lang).misc.whatsappMessage)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-premium !bg-[#25D366] !text-white !border-transparent mt-4 w-fit"

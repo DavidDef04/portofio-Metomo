@@ -416,3 +416,23 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .availability-dot::after { animation: none; }
 }
+
+/* Sélecteur de langue FR / EN */
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-cut);
+  overflow: hidden;
+}
+.lang-switch a {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--mist);
+  transition: color 0.3s ease, background 0.3s ease;
+}
+.lang-switch a:hover { color: var(--bone); }
+.lang-switch a.is-active {
+  color: var(--void);
+  background: var(--champagne);
+}

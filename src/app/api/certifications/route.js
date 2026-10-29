@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCertifications } from "@/lib/cms-store";
+import { localizeList, normalizeLang } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const all = await getCertifications();
+    const lang = normalizeLang(request.nextUrl.searchParams.get("lang"));
+    const all = localizeList(await getCertifications(), lang);
     const visible = all
       .filter((c) => c.visible !== false)
       .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));

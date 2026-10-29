@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getDict } from "@/lib/i18n";
 
-const ModernScrollToTopButton = () => {
+const ModernScrollToTopButton = ({ lang = "fr" }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const ModernScrollToTopButton = () => {
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="fixed bottom-8 right-8 z-40 w-12 h-12 border border-border-strong bg-surface/90 backdrop-blur text-bone hover:border-champagne hover:text-champagne transition-colors max-md:bottom-24"
           style={{ borderRadius: "var(--radius-cut)" }}
-          aria-label="Retour en haut"
+          aria-label={getDict(lang).misc.backToTop}
         >
           ↑
         </motion.button>

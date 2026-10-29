@@ -7,38 +7,40 @@ import AmbientBackground from "./ui/AmbientBackground";
 import { ease } from "@/lib/motion";
 import { whatsappLink } from "@/config/contact";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
+import { getDict } from "@/lib/i18n";
 
 const ModernAboutSection = forwardRef(
-  /** @param {{ initialCertifications?: any[] }} props */
-  ({ initialCertifications }, ref) => {
+  /** @param {{ initialCertifications?: any[], initialAbout?: any, initialExperiences?: any[], initialEducation?: any[], lang?: "fr" | "en" }} props */
+  ({ initialCertifications, initialAbout, initialExperiences, initialEducation, lang = "fr" }, ref) => {
+  const t = getDict(lang).about;
   const [activeTab, setActiveTab] = useState("skills");
 
   const [certifications, setCertifications] = useState(() => initialCertifications || []);
-  const [aboutMeta, setAboutMeta] = useState(DEFAULT_SITE_CONTENT.about);
-  const [experiences, setExperiences] = useState(DEFAULT_SITE_CONTENT.experiences);
-  const [education, setEducation] = useState(DEFAULT_SITE_CONTENT.education);
+  const [aboutMeta, setAboutMeta] = useState(() => initialAbout || DEFAULT_SITE_CONTENT.about);
+  const [experiences, setExperiences] = useState(() => initialExperiences?.length ? initialExperiences : DEFAULT_SITE_CONTENT.experiences);
+  const [education, setEducation] = useState(() => initialEducation?.length ? initialEducation : DEFAULT_SITE_CONTENT.education);
 
   const tabs = [
-    { id: "skills", label: "Stack" },
-    { id: "experience", label: "Parcours" },
-    { id: "education", label: "Formation" },
+    { id: "skills", label: t.tabs.skills },
+    { id: "experience", label: t.tabs.experience },
+    { id: "education", label: t.tabs.education },
     {
       id: "certifications",
       label: certifications.length
-        ? `Certifications (${certifications.length})`
-        : "Certifications",
+        ? `${t.tabs.certifications} (${certifications.length})`
+        : t.tabs.certifications,
     },
   ];
 
   const loadAboutContent = useCallback(() => {
-    fetch("/api/certifications", { cache: "no-store" })
+    fetch(`/api/certifications?lang=${lang}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setCertifications(d.certifications);
       })
       .catch(() => {});
 
-    fetch("/api/site-content", { cache: "no-store" })
+    fetch(`/api/site-content?lang=${lang}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) return;
@@ -47,57 +49,13 @@ const ModernAboutSection = forwardRef(
         if (d.education?.length) setEducation(d.education);
       })
       .catch(() => {});
-  }, []);
+  }, [lang]);
 
   useRefetchOnFocus(loadAboutContent);
 
   // Compétences en étiquettes : des outils concrets plutôt que des
-  // pourcentages auto-évalués, que les recruteurs lisent mal.
-  const skillGroups = [
-    {
-      title: "Développement",
-      items: [
-        "PHP / Laravel",
-        "Python / Django",
-        "JavaScript / TypeScript",
-        "React / Next.js",
-        "NestJS",
-        "Prisma",
-        "Spring Boot",
-        "Astro",
-        "HTML / CSS / Tailwind",
-        "SQL · PostgreSQL · MySQL",
-      ],
-    },
-    {
-      title: "Mise en ligne & automatisation",
-      items: [
-        "Docker",
-        "Vercel · Coolify · VPS",
-        "Git · GitHub Actions",
-        "SEO & référencement",
-        "n8n",
-        "IA générative (API LLM)",
-      ],
-    },
-    {
-      title: "Cybersécurité",
-      items: [
-        "Linux & Bash",
-        "Python pour l'automatisation",
-        "SIEM (Splunk, Chronicle)",
-        "Analyse réseau (Wireshark, tcpdump)",
-        "Détection d'intrusion (Suricata)",
-        "Gestion des risques (NIST CSF)",
-        "Réponse aux incidents",
-        "Sensibilisation au phishing",
-      ],
-    },
-    {
-      title: "Systèmes",
-      items: ["Windows Server", "Administration système", "Réseaux (TCP/IP)"],
-    },
-  ];
+  // pourcentages (textes dans lib/i18n.js → about.skillGroups).
+  const skillGroups = t.skillGroups;
 
   const renderContent = () => {
     switch (activeTab) {
@@ -167,7 +125,7 @@ const ModernAboutSection = forwardRef(
       case "certifications":
         return certifications.length === 0 ? (
           <p className="text-mist text-sm text-center py-8">
-            Aucune certification publiée pour le moment.
+            {t.noCerts}
           </p>
         ) : (
           <div
@@ -193,7 +151,7 @@ const ModernAboutSection = forwardRef(
                     rel="noopener noreferrer"
                     className="inline-block mt-4 text-sm text-champagne hover:underline"
                   >
-                    Vérifier le certificat →
+                    {t.verify}
                   </a>
                 )}
               </div>
@@ -248,15 +206,15 @@ const ModernAboutSection = forwardRef(
 
       <div className="mt-14 flex flex-wrap justify-center gap-4">
         <a
-          href={whatsappLink()}
+          href={whatsappLink(getDict(lang).misc.whatsappMessage)}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-premium btn-premium--primary"
         >
-          Écrire sur WhatsApp
+          {t.whatsapp}
         </a>
         <a href="#contact" className="btn-premium btn-premium--ghost">
-          Autres moyens de contact
+          {t.otherContact}
         </a>
       </div>
     </section>
