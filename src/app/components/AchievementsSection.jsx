@@ -97,10 +97,10 @@ const AchievementsSection = () => {
   return (
     <section id="achievements" ref={ref} className="section-shell relative">
       <SectionHeader
-        label="Impact mesurable"
-        title="Des chiffres qui"
-        titleAccent="parlent de rigueur"
-        description="Projets livrés, reconnaissance GitHub et années de pratique — des indicateurs concrets, tirés de votre portfolio."
+        label="En chiffres"
+        title="Le parcours"
+        titleAccent="en quelques repères"
+        description="Projets livrés, technologies utilisées en production et années de pratique."
         align="center"
       />
 

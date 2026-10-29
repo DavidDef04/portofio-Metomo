@@ -34,7 +34,7 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "David René METOMO — Développeur full-stack",
+    default: "David René METOMO — Développeur full-stack & cybersécurité",
     template: "%s | David METOMO",
   },
   description:
@@ -55,8 +55,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_CM",
     url: siteUrl,
-    siteName: "METOMO Studio",
-    title: "David René METOMO — Expériences digitales premium",
+    siteName: "David René METOMO",
+    title: "David René METOMO — Développeur full-stack & cybersécurité",
     description:
       "Développeur full-stack qui pense sécurité : plateformes SaaS, sites web, API et déploiement. Basé à Douala.",
     images: [
@@ -64,13 +64,13 @@ export const metadata: Metadata = {
         url: "/images/image.png",
         width: 1200,
         height: 630,
-        alt: "David René METOMO — Portfolio premium",
+        alt: "David René METOMO — Développeur full-stack & cybersécurité",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "David René METOMO — Studio digital premium",
+    title: "David René METOMO — Développeur full-stack & cybersécurité",
     description:
       "Développeur full-stack et cybersécurité — Next.js, NestJS, Laravel, Django, SEO, déploiement.",
     images: ["/images/image.png"],
