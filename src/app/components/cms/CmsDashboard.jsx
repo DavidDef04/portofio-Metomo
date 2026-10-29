@@ -363,15 +363,14 @@ export default function CmsDashboard() {
         body: JSON.stringify({
           id: p.id,
           githubId: p.githubId,
-          visible: field === "visible" ? value : p.visible !== false,
-          featured: field === "featured" ? value : p.featured === true,
-          order: p.order ?? 500,
+          [field]: value,
         }),
         cache: "no-store",
       });
       await parseCmsResponse(res);
       showToast("success", "Projet GitHub mis à jour");
       await load();
+      return true;
     } catch (err) {
       showToast("error", err.message);
     }
@@ -966,11 +965,16 @@ export default function CmsDashboard() {
                 </div>
               </div>
 
-              {["githubUrl", "liveUrl"].map((f) => (
+              {[
+                ["githubUrl", "Lien GitHub (facultatif, dépôt public)"],
+                ["liveUrl", "Lien du site en ligne (facultatif)"],
+              ].map(([f, label]) => (
                 <div key={f}>
-                  <label className="label-mono !text-[0.6rem] block mb-1">{f}</label>
+                  <label className="label-mono !text-[0.6rem] block mb-1">{label}</label>
                   <input
                     className={inputClass}
+                    type="url"
+                    placeholder="https://…"
                     value={form[f] || ""}
                     onChange={(e) => setForm({ ...form, [f]: e.target.value })}
                   />
@@ -1131,38 +1135,12 @@ export default function CmsDashboard() {
             </button>
             <div className="space-y-2 max-h-[70vh] overflow-y-auto">
               {github.map((p) => (
-                <div
+                <GithubRow
                   key={p.id}
-                  className="surface-card p-4 flex flex-wrap items-center justify-between gap-3"
-                >
-                  <div>
-                    <p className="text-bone text-sm font-medium">
-                      {p.title}
-                      {p.private && (
-                        <span className="ml-2 text-xs text-champagne">privé</span>
-                      )}
-                    </p>
-                    <p className="text-mist text-xs">{p.githubId || p.full_name}</p>
-                  </div>
-                  <div className="flex gap-4 items-center">
-                    <label className="flex items-center gap-1 text-xs">
-                      <input
-                        type="checkbox"
-                        checked={p.visible !== false}
-                        onChange={(e) => toggleGithub(p, "visible", e.target.checked)}
-                      />
-                      Visible
-                    </label>
-                    <label className="flex items-center gap-1 text-xs">
-                      <input
-                        type="checkbox"
-                        checked={p.featured === true}
-                        onChange={(e) => toggleGithub(p, "featured", e.target.checked)}
-                      />
-                      Vedette
-                    </label>
-                  </div>
-                </div>
+                  project={p}
+                  onToggle={toggleGithub}
+                  inputClass={inputClass}
+                />
               ))}
             </div>
           </div>
@@ -1260,6 +1238,141 @@ export default function CmsDashboard() {
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+/* Ligne d'un dépôt GitHub : visibilité, vedette, et valeurs d'affichage
+   (titre, lien du site, description) qui remplacent celles de GitHub. */
+function GithubRow({ project: p, onToggle, inputClass }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState({
+    title: p.overrides?.title || "",
+    liveUrl: p.overrides?.liveUrl || "",
+    description: p.overrides?.description || "",
+    order: p.order ?? 500,
+  });
+  const [busy, setBusy] = useState(false);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const res = await fetch("/api/cms/github-meta", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: p.id, githubId: p.githubId, ...draft }),
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+      setOpen(false);
+      await onToggle(p, "order", Number(draft.order) || 500);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const shownLive = p.overrides?.liveUrl || p.homepage || "";
+
+  return (
+    <div className="surface-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-bone text-sm font-medium">
+            {p.overrides?.title || p.title}
+            {p.private && <span className="ml-2 text-xs text-champagne">privé</span>}
+          </p>
+          <p className="text-mist text-xs truncate">
+            {p.githubId || p.full_name}
+            {shownLive && <> · {shownLive}</>}
+          </p>
+        </div>
+        <div className="flex gap-4 items-center">
+          <label className="flex items-center gap-1 text-xs">
+            <input
+              type="checkbox"
+              checked={p.visible !== false}
+              onChange={(e) => onToggle(p, "visible", e.target.checked)}
+            />
+            Visible
+          </label>
+          <label className="flex items-center gap-1 text-xs">
+            <input
+              type="checkbox"
+              checked={p.featured === true}
+              onChange={(e) => onToggle(p, "featured", e.target.checked)}
+            />
+            Vedette
+          </label>
+          <button
+            type="button"
+            className="text-xs text-champagne"
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? "Fermer" : "Modifier"}
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <form onSubmit={save} className="mt-4 space-y-3 border-t border-border pt-4">
+          <div>
+            <label className="label-mono !text-[0.6rem] block mb-1">
+              Titre affiché (vide = nom du dépôt)
+            </label>
+            <input
+              className={inputClass}
+              placeholder={p.title}
+              value={draft.title}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label-mono !text-[0.6rem] block mb-1">
+              Lien du site en ligne (vide = aucun lien)
+            </label>
+            <input
+              className={inputClass}
+              type="url"
+              placeholder="https://…"
+              value={draft.liveUrl}
+              onChange={(e) => setDraft({ ...draft, liveUrl: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label-mono !text-[0.6rem] block mb-1">
+              Description affichée (vide = description GitHub)
+            </label>
+            <textarea
+              className={`${inputClass} resize-none`}
+              rows={4}
+              placeholder={p.description}
+              value={draft.description}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label-mono !text-[0.6rem] block mb-1">
+              Ordre (plus petit = plus haut)
+            </label>
+            <input
+              className={inputClass}
+              type="number"
+              value={draft.order}
+              onChange={(e) => setDraft({ ...draft, order: e.target.value })}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={busy}
+            className="btn-premium btn-premium--primary disabled:opacity-50"
+          >
+            {busy ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

@@ -19,6 +19,12 @@ export async function GET() {
         visible: m.visible !== false,
         featured: m.featured === true,
         order: m.order ?? 500,
+        // Valeurs d'affichage saisies dans le CMS (prioritaires sur GitHub)
+        overrides: {
+          title: m.title || "",
+          liveUrl: m.liveUrl || "",
+          description: m.description || "",
+        },
       };
     });
     return NextResponse.json({ success: true, meta, projects });
@@ -39,11 +45,15 @@ export async function PUT(req) {
     if (!key) {
       return NextResponse.json({ error: "id requis" }, { status: 400 });
     }
-    meta[key] = {
-      visible: body.visible !== false,
-      featured: body.featured === true,
-      order: Number(body.order) ?? 500,
-    };
+    const previous = meta[key] || {};
+    const next = { ...previous };
+    if ("visible" in body) next.visible = body.visible !== false;
+    if ("featured" in body) next.featured = body.featured === true;
+    if ("order" in body) next.order = Number.isFinite(Number(body.order)) ? Number(body.order) : 500;
+    for (const f of ["title", "liveUrl", "description"]) {
+      if (typeof body[f] === "string") next[f] = body[f].trim();
+    }
+    meta[key] = next;
     await saveGithubMeta(meta);
     revalidateTag("github-projects");
     revalidatePublicPages();
