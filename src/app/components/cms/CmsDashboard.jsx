@@ -1414,11 +1414,34 @@ function GithubRow({ project: p, onToggle, inputClass }) {
     title: p.overrides?.title || "",
     liveUrl: p.overrides?.liveUrl || "",
     description: p.overrides?.description || "",
+    image: p.overrides?.image || "",
     title_en: p.overrides?.title_en || "",
     description_en: p.overrides?.description_en || "",
     order: p.order ?? 500,
   });
   const [busy, setBusy] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
+
+  const uploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImg(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("kind", "image");
+      if (draft.image) body.append("previousPath", draft.image);
+      const res = await fetch("/api/cms/upload", { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
+      setDraft((d) => ({ ...d, image: data.path }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploadingImg(false);
+      e.target.value = "";
+    }
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -1505,6 +1528,32 @@ function GithubRow({ project: p, onToggle, inputClass }) {
               placeholder="https://…"
               value={draft.liveUrl}
               onChange={(e) => setDraft({ ...draft, liveUrl: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label-mono !text-[0.6rem] block mb-1">
+              Image (capture du site)
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              {draft.image && (
+                <img src={draft.image} alt="" className="w-28 aspect-[16/9] object-cover border border-border" />
+              )}
+              <label className="btn-premium btn-premium--ghost cursor-pointer text-xs">
+                {uploadingImg ? "…" : "Choisir une image"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={uploadingImg}
+                  onChange={uploadImage}
+                />
+              </label>
+            </div>
+            <input
+              className={`${inputClass} mt-2`}
+              placeholder="/api/media/… ou /images/projects/…"
+              value={draft.image}
+              onChange={(e) => setDraft({ ...draft, image: e.target.value })}
             />
           </div>
           <div>

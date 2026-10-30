@@ -54,14 +54,24 @@ function ProjectVisual({ project, index, large = false, t, lang }) {
         />
       ) : (
         <div className="project-visual-fallback absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-          <span className="label-mono !text-[0.6rem] mb-3">{categoryLabel(project.category, lang)}</span>
-          <span
-            className={`font-display font-semibold text-bone/90 leading-none ${
-              large ? "text-4xl md:text-6xl" : "text-2xl"
-            }`}
-          >
-            {project.title}
-          </span>
+          {large ? (
+            <>
+              <span className="label-mono !text-[0.6rem] mb-3">{categoryLabel(project.category, lang)}</span>
+              <span className="font-display font-semibold text-bone/90 leading-none text-4xl md:text-6xl">
+                {project.title}
+              </span>
+            </>
+          ) : (
+            // Petite carte : le titre est déjà juste en dessous, on affiche des initiales
+            <span aria-hidden className="font-display font-semibold text-champagne/40 leading-none text-5xl">
+              {project.title
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase()}
+            </span>
+          )}
         </div>
       )}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-void/50 via-transparent to-transparent" />
@@ -170,7 +180,15 @@ function OtherProject({ project, t, lang }) {
   const href = live || code;
 
   return (
-    <article className="surface-card !rounded-none p-6 flex flex-col h-full">
+    <article className="group surface-card !rounded-none flex flex-col h-full overflow-hidden">
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden>
+          <ProjectVisual project={project} index={99} t={t} lang={lang} />
+        </a>
+      ) : (
+        <ProjectVisual project={project} index={99} t={t} lang={lang} />
+      )}
+      <div className="p-6 flex flex-col flex-1">
       <p className="label-mono !text-[0.55rem] mb-3">{categoryLabel(project.category, lang)}</p>
       <h4 className="font-display text-lg text-bone font-semibold mb-2">
         {href ? (
@@ -218,6 +236,7 @@ function OtherProject({ project, t, lang }) {
             </a>
           )}
         </div>
+      </div>
       </div>
     </article>
   );
