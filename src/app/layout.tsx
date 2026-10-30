@@ -76,6 +76,8 @@ export const metadata: Metadata = {
     images: ["/og/og-fr.jpg"],
   },
   robots: { index: true, follow: true },
+  // Validation du site dans Google Search Console (balise publique)
+  verification: { google: "eR8ipWoJQpA-3BT-Lq2uK7QaIH-mmq-xQdW36eLpcqs" },
   alternates: { canonical: siteUrl },
 };
 
