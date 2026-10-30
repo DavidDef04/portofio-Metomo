@@ -1422,6 +1422,29 @@ function GithubRow({ project: p, onToggle, inputClass }) {
   const [busy, setBusy] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
 
+  const captureSite = async () => {
+    const url = draft.liveUrl || p.homepage;
+    if (!url) {
+      alert("Renseignez d'abord le lien du site.");
+      return;
+    }
+    setUploadingImg(true);
+    try {
+      const res = await fetch("/api/cms/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
+      setDraft((d) => ({ ...d, image: data.path }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploadingImg(false);
+    }
+  };
+
   const uploadImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1548,6 +1571,15 @@ function GithubRow({ project: p, onToggle, inputClass }) {
                   onChange={uploadImage}
                 />
               </label>
+              <button
+                type="button"
+                className="btn-premium btn-premium--ghost text-xs"
+                disabled={uploadingImg}
+                onClick={captureSite}
+                title="Prend une capture d'écran du site en ligne"
+              >
+                Capturer le site
+              </button>
             </div>
             <input
               className={`${inputClass} mt-2`}
