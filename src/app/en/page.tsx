@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     siteName: "David René METOMO",
     title: t.title,
     description: t.ogDescription,
-    images: [{ url: "/images/image.png", width: 1200, height: 630, alt: t.title }],
+    images: [{ url: "/og/og-en.jpg", width: 1200, height: 630, alt: t.title }],
   },
   twitter: {
     card: "summary_large_image",
     title: t.title,
     description: t.ogDescription,
-    images: ["/images/image.png"],
+    images: ["/og/og-en.jpg"],
   },
 };
 

@@ -61,7 +61,7 @@ export const metadata: Metadata = {
       "Développeur full-stack qui pense sécurité : plateformes SaaS, sites web, API et déploiement. Basé à Douala.",
     images: [
       {
-        url: "/images/image.png",
+        url: "/og/og-fr.jpg",
         width: 1200,
         height: 630,
         alt: "David René METOMO — Développeur full-stack & cybersécurité",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "David René METOMO — Développeur full-stack & cybersécurité",
     description:
       "Développeur full-stack et cybersécurité — Next.js, NestJS, Laravel, Django, SEO, déploiement.",
-    images: ["/images/image.png"],
+    images: ["/og/og-fr.jpg"],
   },
   robots: { index: true, follow: true },
   alternates: { canonical: siteUrl },
@@ -88,7 +88,11 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: "David René METOMO",
-  jobTitle: "Développeur Full-Stack",
+  jobTitle: "Développeur full-stack & cybersécurité",
+  description:
+    "Développeur full-stack et cybersécurité à Douala : plateformes SaaS, sites web, API et déploiement. Certifié Google Cybersecurity.",
+  image: `${siteUrl}/images/image.png`,
+  knowsLanguage: ["fr", "en"],
   url: siteUrl,
   email: "metomo442@gmail.com",
   address: {
