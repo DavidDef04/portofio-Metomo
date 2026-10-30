@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 import StatsPanel from "./StatsPanel";
+import Toast, { TOAST_DURATION_MS } from "./Toast";
+import { useConfirm } from "./ConfirmDialog";
 
 async function parseCmsResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -71,16 +73,17 @@ export default function CmsDashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editingCertId, setEditingCertId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [confirmAction, confirmDialog] = useConfirm();
   const [saving, setSaving] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const showToast = useCallback((type, text) => {
-    setToast({ type, text });
+  const showToast = useCallback((type, text, opts = {}) => {
+    setToast({ type, text, id: Date.now(), ...opts });
   }, []);
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 6000);
+    const t = setTimeout(() => setToast(null), TOAST_DURATION_MS);
     return () => clearTimeout(t);
   }, [toast]);
   const [heroForm, setHeroForm] = useState(null);
@@ -153,7 +156,13 @@ export default function CmsDashboard() {
   };
 
   const deleteProject = async (id) => {
-    if (!confirm("Supprimer ce projet ?")) return;
+    if (
+      !(await confirmAction({
+        title: "Supprimer ce projet ?",
+        message: "Il disparaîtra du portfolio. Cette action est définitive.",
+      }))
+    )
+      return;
     setSaving("project");
     try {
       const res = await fetch(`/api/cms/manual-projects/${id}`, {
@@ -352,7 +361,13 @@ export default function CmsDashboard() {
   };
 
   const deleteExperience = async (id) => {
-    if (!confirm("Supprimer cette expérience ?")) return;
+    if (
+      !(await confirmAction({
+        title: "Supprimer cette expérience ?",
+        message: "Elle disparaîtra de la section Parcours. Cette action est définitive.",
+      }))
+    )
+      return;
     setSaving("experience");
     try {
       await saveExperiences(experiences.filter((x) => x.id !== id));
@@ -414,7 +429,13 @@ export default function CmsDashboard() {
   };
 
   const deleteCert = async (id) => {
-    if (!confirm("Supprimer ?")) return;
+    if (
+      !(await confirmAction({
+        title: "Supprimer cette certification ?",
+        message: "Pour la retirer du site sans la perdre, décochez plutôt « Visible sur le site ».",
+      }))
+    )
+      return;
     setSaving("cert");
     try {
       const res = await fetch(`/api/cms/certifications/${id}`, {
@@ -506,30 +527,8 @@ export default function CmsDashboard() {
       </aside>
 
       <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto md:max-h-screen relative pb-10">
-        {toast && (
-          <div
-            role="status"
-            className={`fixed top-16 md:top-4 left-4 right-4 md:left-auto md:right-4 z-50 md:max-w-md px-4 py-3 border text-sm shadow-lg ${
-              toast.type === "success"
-                ? "bg-teal/15 border-teal text-teal"
-                : "bg-ember/15 border-ember text-ember"
-            }`}
-            style={{ borderRadius: "var(--radius-cut)" }}
-          >
-            <p className="font-medium">{toast.type === "success" ? "✓ Succès" : "✕ Erreur"}</p>
-            <p className="mt-1 text-bone-dim">{toast.text}</p>
-            {toast.type === "success" && (
-              <a
-                href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-2 text-champagne hover:underline text-xs"
-              >
-                Voir sur le site →
-              </a>
-            )}
-          </div>
-        )}
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        {confirmDialog}
 
         {tab === "stats" && <StatsPanel />}
 
@@ -1292,6 +1291,7 @@ export default function CmsDashboard() {
                   key={p.id}
                   project={p}
                   onToggle={toggleGithub}
+                  onError={(msg) => showToast("error", msg)}
                   inputClass={inputClass}
                 />
               ))}
@@ -1408,7 +1408,7 @@ export default function CmsDashboard() {
 
 /* Ligne d'un dépôt GitHub : visibilité, vedette, et valeurs d'affichage
    (titre, lien du site, description) qui remplacent celles de GitHub. */
-function GithubRow({ project: p, onToggle, inputClass }) {
+function GithubRow({ project: p, onToggle, onError, inputClass }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({
     title: p.overrides?.title || "",
@@ -1425,7 +1425,7 @@ function GithubRow({ project: p, onToggle, inputClass }) {
   const captureSite = async () => {
     const url = draft.liveUrl || p.homepage;
     if (!url) {
-      alert("Renseignez d'abord le lien du site.");
+      onError("Renseignez d'abord le lien du site.");
       return;
     }
     setUploadingImg(true);
@@ -1439,7 +1439,7 @@ function GithubRow({ project: p, onToggle, inputClass }) {
       if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
       setDraft((d) => ({ ...d, image: data.path }));
     } catch (err) {
-      alert(err.message);
+      onError(err.message);
     } finally {
       setUploadingImg(false);
     }
@@ -1459,7 +1459,7 @@ function GithubRow({ project: p, onToggle, inputClass }) {
       if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
       setDraft((d) => ({ ...d, image: data.path }));
     } catch (err) {
-      alert(err.message);
+      onError(err.message);
     } finally {
       setUploadingImg(false);
       e.target.value = "";
@@ -1480,7 +1480,7 @@ function GithubRow({ project: p, onToggle, inputClass }) {
       setOpen(false);
       await onToggle(p, "order", Number(draft.order) || 500);
     } catch (err) {
-      alert(err.message);
+      onError(err.message);
     } finally {
       setBusy(false);
     }
