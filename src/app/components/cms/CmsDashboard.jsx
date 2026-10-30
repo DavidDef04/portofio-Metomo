@@ -6,6 +6,7 @@ import StatsPanel from "./StatsPanel";
 import Toast, { TOAST_DURATION_MS } from "./Toast";
 import { useConfirm } from "./ConfirmDialog";
 import ServicesEditor from "./ServicesEditor";
+import TestimonialsEditor from "./TestimonialsEditor";
 
 async function parseCmsResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -57,6 +58,7 @@ const NAV_ITEMS = [
   ["about", "Section Expertise"],
   ["hero", "Hero (accueil)"],
   ["services", "Services"],
+  ["testimonials", "Témoignages"],
   ["parcours", "Parcours pro"],
   ["manual", "Projets manuels"],
   ["github", "Projets GitHub"],
@@ -76,6 +78,7 @@ export default function CmsDashboard() {
   const [editingCertId, setEditingCertId] = useState(null);
   const [toast, setToast] = useState(null);
   const [services, setServices] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
   const [confirmAction, confirmDialog] = useConfirm();
   const [saving, setSaving] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -109,6 +112,7 @@ export default function CmsDashboard() {
     if (s.success && s.content) {
       const { hero, about, experiences: exps, services: svcs } = s.content;
       setServices(svcs || []);
+      setTestimonials(s.content.testimonials || []);
       setHeroForm({
         ...hero,
         rolesText: (hero.roles || []).join("\n"),
@@ -535,6 +539,33 @@ export default function CmsDashboard() {
         {confirmDialog}
 
         {tab === "stats" && <StatsPanel />}
+
+        {tab === "testimonials" && (
+          <TestimonialsEditor
+            testimonials={testimonials}
+            inputClass={inputClass}
+            confirmAction={confirmAction}
+            saving={saving === "testimonials"}
+            onSave={async (list) => {
+              setSaving("testimonials");
+              try {
+                const res = await fetch("/api/cms/site-content", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ testimonials: list }),
+                  cache: "no-store",
+                });
+                const data = await parseCmsResponse(res);
+                setTestimonials(data.content.testimonials || []);
+                showToast("success", "Témoignages enregistrés.");
+              } catch (err) {
+                showToast("error", err.message);
+              } finally {
+                setSaving(null);
+              }
+            }}
+          />
+        )}
 
         {tab === "services" && (
           <ServicesEditor
