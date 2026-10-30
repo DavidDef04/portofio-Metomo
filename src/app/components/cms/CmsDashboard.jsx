@@ -5,6 +5,7 @@ import { DEFAULT_SITE_CONTENT } from "@/lib/site-content-defaults";
 import StatsPanel from "./StatsPanel";
 import Toast, { TOAST_DURATION_MS } from "./Toast";
 import { useConfirm } from "./ConfirmDialog";
+import ServicesEditor from "./ServicesEditor";
 
 async function parseCmsResponse(res) {
   const data = await res.json().catch(() => ({}));
@@ -55,6 +56,7 @@ const NAV_ITEMS = [
   ["stats", "Statistiques"],
   ["about", "Section Expertise"],
   ["hero", "Hero (accueil)"],
+  ["services", "Services"],
   ["parcours", "Parcours pro"],
   ["manual", "Projets manuels"],
   ["github", "Projets GitHub"],
@@ -73,6 +75,7 @@ export default function CmsDashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editingCertId, setEditingCertId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [services, setServices] = useState([]);
   const [confirmAction, confirmDialog] = useConfirm();
   const [saving, setSaving] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -104,7 +107,8 @@ export default function CmsDashboard() {
     if (g.success) setGithub(g.projects);
     if (c.success) setCerts(c.certifications);
     if (s.success && s.content) {
-      const { hero, about, experiences: exps } = s.content;
+      const { hero, about, experiences: exps, services: svcs } = s.content;
+      setServices(svcs || []);
       setHeroForm({
         ...hero,
         rolesText: (hero.roles || []).join("\n"),
@@ -531,6 +535,33 @@ export default function CmsDashboard() {
         {confirmDialog}
 
         {tab === "stats" && <StatsPanel />}
+
+        {tab === "services" && (
+          <ServicesEditor
+            services={services}
+            inputClass={inputClass}
+            confirmAction={confirmAction}
+            saving={saving === "services"}
+            onSave={async (list) => {
+              setSaving("services");
+              try {
+                const res = await fetch("/api/cms/site-content", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ services: list }),
+                  cache: "no-store",
+                });
+                const data = await parseCmsResponse(res);
+                setServices(data.content.services || []);
+                showToast("success", "Services enregistrés.");
+              } catch (err) {
+                showToast("error", err.message);
+              } finally {
+                setSaving(null);
+              }
+            }}
+          />
+        )}
 
         {tab === "about" && aboutForm && (
           <form

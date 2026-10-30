@@ -10,7 +10,7 @@ const RANGES = [
 // Ordre et regroupement des actions suivies
 const ACTION_GROUPS = [
   ["CV", ["cv_download_fr", "cv_download_en"]],
-  ["Contact", ["contact_whatsapp", "contact_email", "contact_form_sent"]],
+  ["Contact", ["service_quote", "contact_whatsapp", "contact_email", "contact_form_sent"]],
   ["Projets & réseaux", ["project_visit", "project_code", "social_click", "language_switch"]],
 ];
 

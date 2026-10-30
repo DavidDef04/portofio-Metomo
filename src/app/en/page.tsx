@@ -9,6 +9,23 @@ const t = DICT.en.meta;
 export const metadata: Metadata = {
   title: { absolute: t.title },
   description: t.description,
+  keywords: [
+    "full-stack developer Cameroon",
+    "web developer Douala",
+    "penetration tester",
+    "junior pentester",
+    "cybersecurity analyst",
+    "SOC analyst junior",
+    "security audit",
+    "web application security",
+    "OWASP Top 10",
+    "SaaS development",
+    "e-commerce website",
+    "custom web application",
+    "Next.js NestJS developer",
+    "freelance developer Africa",
+    "David METOMO",
+  ],
   alternates: {
     canonical: "/en",
     languages: { fr: "/", en: "/en", "x-default": "/" },

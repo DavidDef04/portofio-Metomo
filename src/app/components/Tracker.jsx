@@ -28,6 +28,11 @@ export default function Tracker({ lang }) {
         track(isEn ? "cv_download_en" : "cv_download_fr", base);
         return;
       }
+      const serviceCard = a.closest("#services article");
+      if (serviceCard) {
+        track("service_quote", { ...base, service: serviceCard.dataset.service || "" });
+        return;
+      }
       if (/wa\.me|whatsapp/i.test(href)) {
         track("contact_whatsapp", base);
         return;

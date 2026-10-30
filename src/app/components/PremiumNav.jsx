@@ -6,7 +6,7 @@ import { ease } from "@/lib/motion";
 import { whatsappLink } from "@/config/contact";
 import { getDict, homePath } from "@/lib/i18n";
 
-const NAV_IDS = ["home", "projects", "achievements", "about", "contact"];
+const NAV_IDS = ["home", "projects", "services", "about", "contact"];
 
 /** Sélecteur FR / EN : lien vers l'autre version, en gardant la section. */
 function LangSwitch({ lang, label, className = "" }) {

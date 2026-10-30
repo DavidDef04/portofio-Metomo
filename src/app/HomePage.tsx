@@ -2,6 +2,7 @@ import PremiumNav from "./components/PremiumNav";
 import ModernHeroSection from "./components/ModernHeroSection";
 import ModernAboutSection from "./components/ModernAboutSection";
 import ModernProjectSection from "./components/ModernProjectSection";
+import ServicesSection from "./components/ServicesSection";
 import ModernEmailSection from "./components/ModernEmailSection";
 import ModernFooter from "./components/ModernFooter";
 import AchievementsSection from "./components/AchievementsSection";
@@ -30,6 +31,7 @@ async function loadInitialData(lang: Lang) {
       about: siteContent?.about,
       experiences: siteContent?.experiences,
       education: siteContent?.education,
+      services: siteContent?.services,
       projects,
       certifications: localizeList(certs || [], lang)
         .filter((c: { visible?: boolean }) => c.visible !== false)
@@ -55,6 +57,7 @@ export default async function HomePage({ lang }: { lang: Lang }) {
         <PremiumNav lang={lang} />
         <ModernHeroSection lang={lang} initialHero={data.hero} />
         <ModernProjectSection lang={lang} initialProjects={data.projects} />
+        <ServicesSection lang={lang} services={data.services} />
         <AchievementsSection lang={lang} />
         <ModernAboutSection
           lang={lang}

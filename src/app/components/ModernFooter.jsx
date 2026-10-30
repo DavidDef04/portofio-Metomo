@@ -35,6 +35,7 @@ const ModernFooter = ({ lang = "fr" }) => {
               {[
                 ["#home", d.nav.home],
                 ["#projects", d.nav.projects],
+                ["#services", d.nav.services],
                 ["#about", d.nav.about],
                 ["#contact", d.nav.contact],
               ].map(([href, label]) => (
